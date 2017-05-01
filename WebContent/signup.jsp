@@ -71,10 +71,12 @@
         <option value="WI">Wisconsin</option>
         <option value="WY">Wyoming</option>
       </select>
+      <input type="submit" value="Sign Up!">
     </form>
     <a href="/CSE135/login">Login</a>
     <%
     String action = request.getParameter("action");
+    String n = null;
     Connection conn=null;
     PreparedStatement pstmt=null;
     
@@ -87,18 +89,30 @@
         if(action != null && action.equals("insert")){
       	  conn.setAutoCommit(false);
       	  pstmt = conn.prepareStatement("INSERT INTO users (name, role, age, state) VALUES(?,?,?,?)");
-      	  pstmt.setString(1,request.getParameter("name"));
-      	  pstmt.setString(2, request.getParameter("role"));
-      	  pstmt.setInt(3, Integer.parseInt(request.getParameter("age")));
-      	  pstmt.setString(4,request.getParameter("state"));
-      	  int rowCount = pstmt.executeUpdate();
-      	  
-      	  conn.commit();
-      	  conn.setAutoCommit(true);
+      	  try{ 
+      	    pstmt.setString(1,request.getParameter("name"));
+      	    if(request.getParameter("role").equals("")){
+      	      pstmt.setString(2, n);
+      	    } else{ 
+      	      pstmt.setString(2, request.getParameter("role"));
+      	    }
+      	    pstmt.setInt(3, Integer.parseInt(request.getParameter("age")));
+      	    if(request.getParameter("state").equals("")) {
+      	      pstmt.setString(4, n);
+      	    } else{ 
+      	      pstmt.setString(4, request.getParameter("state"));
+      	    }
+      	    int rowCount = pstmt.executeUpdate();
+      	    conn.commit();
+      	    conn.setAutoCommit(true);
+      	    response.sendRedirect("/CSE135/signupsuccess");
+      	  }catch(Exception e){
+      	    response.sendRedirect("/CSE135/signupfail");
+      	  }
         }
         conn.close();
     } catch (SQLException e){
-         		
+      response.sendRedirect("/CSE135/signupfail");
     }
     finally{
       if (pstmt != null) {

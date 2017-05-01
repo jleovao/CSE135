@@ -14,9 +14,18 @@
     <servlet-name>login</servlet-name>
     <jsp-file>/login.jsp</jsp-file>
   </servlet>
-    <servlet>
+  
+  <servlet>
   <servlet-name>signup</servlet-name>
     <jsp-file>/signup.jsp</jsp-file>
+  </servlet>
+  <servlet>
+  <servlet-name>signupsuccess</servlet-name>
+    <jsp-file>/signupsuccess.jsp</jsp-file>
+  </servlet>
+  <servlet>
+  <servlet-name>signupfail</servlet-name>
+    <jsp-file>/signupfail.jsp</jsp-file>
   </servlet>
   
   <servlet-mapping>
@@ -27,6 +36,16 @@
   <servlet-mapping>
     <servlet-name>signup</servlet-name>
     <url-pattern>signup</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>signupsuccess</servlet-name>
+    <url-pattern>signupsuccess</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>signupfail</servlet-name>
+    <url-pattern>signupfail</url-pattern>
   </servlet-mapping>
   
   <welcome-file-list>
