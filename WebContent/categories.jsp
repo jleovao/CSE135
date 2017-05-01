@@ -2,6 +2,27 @@
     pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
+  <%
+  String name=null;
+  String role=null;
+  try{
+    if(session.getAttribute("name")!=null || !session.getAttribute("name").equals("")) {
+      name=(String) session.getAttribute("name");
+    }
+    else{name=null;}
+  
+    if(session.getAttribute("role")!=null || !session.getAttribute("role").equals("")) {
+      role=(String) session.getAttribute("role");
+    }
+    else{role=null;}
+  }catch(Exception e){
+    name=null;
+    role=null;
+  }
+  if(role.equals("customer")) {
+    response.sendRedirect("/CSE135/redirectaccess");
+  }
+  %>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>Categories Page</title>
@@ -32,7 +53,14 @@
     <div class = "container">
       <div class="header">
         <h1>Categories Page</h1>
-        <h4>Hello, Charlie</h4>
+        <%
+        if(name!=null){
+          out.println("<h4>Hello, "+name+"!</h4>");
+        }
+        else{
+          response.sendRedirect("/CSE135/redirectlogin");
+        }
+        %>
       </div>
       <div class="nav">
         <ul>
@@ -63,7 +91,7 @@
                 	// Open a connection to the database using DriverManager
                 	conn = DriverManager.getConnection(
                     	"jdbc:postgresql://localhost/Shopping_Application?" +
-                    	"user=postgres&password=7124804");
+                    	"user=postgres&password=postgres");
             	%>
             	<%-- -------- INSERT Code -------- --%>
             	<%

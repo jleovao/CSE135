@@ -32,7 +32,7 @@
         out.println("<h4>Hello, "+name+"!</h4>");
       }
       else{
-        out.println("<h3>You are not logged in</h3>");
+        response.sendRedirect("/CSE135/redirectlogin");
       }
       %>
       

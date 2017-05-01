@@ -60,6 +60,16 @@
     <jsp-file>/cart.jsp</jsp-file>
   </servlet>
   
+  <servlet>
+    <servlet-name>redirectlogin</servlet-name>
+    <jsp-file>/redirectlogin.jsp</jsp-file>
+  </servlet>
+  
+  <servlet>
+    <servlet-name>redirectaccess</servlet-name>
+    <jsp-file>/redirectaccess.jsp</jsp-file>
+  </servlet>
+  
   
   <servlet-mapping>
     <servlet-name>login</servlet-name>
@@ -109,6 +119,16 @@
   <servlet-mapping>
     <servlet-name>cart</servlet-name>
     <url-pattern>cart</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>redirectlogin</servlet-name>
+    <url-pattern>redirectlogin</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>redirectaccess</servlet-name>
+    <url-pattern>redirectaccess</url-pattern>
   </servlet-mapping>
   
   <welcome-file-list>
