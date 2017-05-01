@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
-<!DOCTYPE html>
+    import="java.sql.*" pageEncoding="ISO-8859-1"%>
+
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -9,13 +9,16 @@
   <body>
     <h1>Signup Page</h1>
     <form>
+      <input type="hidden" name="action" value="insert">
       Name:<input type="text" name="name"><br>
       Role:<select name="role">
+        <option value="">Role</option>
         <option value="customer">Customer</option>
         <option value="owner">Owner</option>
       </select><br>
       Age:<input type="number" name="age" min="0" max="999"><br>
       State:<select name="state">
+        <option value="">State</option>
         <option value="AL">Alabama</option>
         <option value="AK">Alaska</option>
         <option value="AZ">Arizona</option>
@@ -68,7 +71,50 @@
         <option value="WI">Wisconsin</option>
         <option value="WY">Wyoming</option>
       </select>
-      <input type="submit" value="Sign Up!">
     </form>
+    <a href="/CSE135/login">Login</a>
+    <%
+    String action = request.getParameter("action");
+    Connection conn=null;
+    PreparedStatement pstmt=null;
+    
+    try{
+        Class.forName("org.postgresql.Driver");
+        conn = DriverManager.getConnection(
+          "jdbc:postgresql://localhost:5432/shopping?" +
+          "user=postgres&password=Ineas710");
+        
+        if(action != null && action.equals("insert")){
+      	  conn.setAutoCommit(false);
+      	  pstmt = conn.prepareStatement("INSERT INTO users (name, role, age, state) VALUES(?,?,?,?)");
+      	  pstmt.setString(1,request.getParameter("name"));
+      	  pstmt.setString(2, request.getParameter("role"));
+      	  pstmt.setInt(3, Integer.parseInt(request.getParameter("age")));
+      	  pstmt.setString(4,request.getParameter("state"));
+      	  int rowCount = pstmt.executeUpdate();
+      	  
+      	  conn.commit();
+      	  conn.setAutoCommit(true);
+        }
+        conn.close();
+    } catch (SQLException e){
+         		
+    }
+    finally{
+      if (pstmt != null) {
+        try {
+          pstmt.close();
+        } catch (SQLException e) { } // Ignore
+      pstmt = null;
+      }
+      if (conn != null) {
+        try {
+          conn.close();
+        } catch (SQLException e) { } // Ignore
+        conn = null;
+      }
+    	
+    }
+    %>
   </body>
 </html>

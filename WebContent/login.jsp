@@ -8,12 +8,12 @@
   </head>
   <body>
     <h1>Login Page</h1>
-    <form>
+    <form action="/login">
       Name:<input type="text" name="name">
       <br>
       <input type="submit" value="Login">
     </form>
     <br>
-    <a href="./signup.jsp">New User?</a>
+    <a href="/CSE135/signup">New User?</a>
   </body>
 </html>
