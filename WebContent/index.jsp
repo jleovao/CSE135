@@ -38,11 +38,11 @@
       
       <div class="nav">
         <ul>
-          <li><a href="./categories.jsp">Categories Page(owners)</a></li>
-          <li><a href="./products.jsp">Products Page(owners)</a></li>
-          <li><a href="./browsing.jsp">Product Browsing Page</a></li>
-          <li><a href="./order.jsp">Product Order Page</a></li>
-          <li><a href="./cart.jsp">Shopping Cart Page</a></li>
+          <li><a href="/CSE135/categories">Categories Page(owners)</a></li>
+          <li><a href="/CSE135/products">Products Page(owners)</a></li>
+          <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
+          <li><a href="/CSE135/order">Product Order Page</a></li>
+          <li><a href="/CSE135/cart">Shopping Cart Page</a></li>
         </ul>
       </div>
 
