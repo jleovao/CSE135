@@ -27,11 +27,12 @@
       }
     </style>
   </head>
+  
   <body>
     <div class = "container">
       <div class="header">
         <h1>Categories Page</h1>
-        <h4>Hello, [insert name here]</h4>
+        <h4>Hello, Charlie</h4>
       </div>
       <div class="nav">
         <ul>
@@ -42,14 +43,202 @@
           <li><a href="./cart.jsp">Shopping Cart</a></li>
         </ul>
       </div>
-      <div class="categories">
-        <form id="catform">
-          <input type="text" name="category_name" placeholder="Category Name">
-          <textarea rows="4" cols="50" name="description" placeholder="Description"></textarea>
-          <input type="submit" value="Add">
-        </form>
-      </div>
+
+      <table>
+		<tr>
+            <td>
+            	<%-- Import the java.sql package --%>
+            	<%@ page import="java.sql.*"%>
+            	<%-- -------- Open Connection Code -------- --%>
+            	<%
+            
+            	Connection conn = null;
+            	PreparedStatement pstmt = null;
+            	ResultSet rs = null;
+            
+            	try {
+                	// Registering Postgresql JDBC driver with the DriverManager
+                	Class.forName("org.postgresql.Driver");
+
+                	// Open a connection to the database using DriverManager
+                	conn = DriverManager.getConnection(
+                    	"jdbc:postgresql://localhost/Shopping_Application?" +
+                    	"user=postgres&password=7124804");
+            	%>
+            	<%-- -------- INSERT Code -------- --%>
+            	<%
+                	String action = request.getParameter("action");
+                	// Check if an insertion is requested
+                	if (action != null && action.equals("insert")) {
+
+                    	// Begin transaction
+                    	conn.setAutoCommit(false);
+
+                    	// Create the prepared statement and use it to
+                    	// INSERT student values INTO the categories table.
+                    	pstmt = conn
+                    	.prepareStatement("INSERT INTO categories (category_name, description) VALUES (?, ?)");
+                    	pstmt.setString(1, request.getParameter("category_name"));
+                    	pstmt.setString(2, request.getParameter("description"));
+                    	int rowCount = pstmt.executeUpdate();
+
+                    	// Commit transaction
+                    	conn.commit();
+                    	conn.setAutoCommit(true);
+                	}
+            	%>
+            	<%-- -------- UPDATE Code -------- --%>
+            	<%
+                	// Check if an update is requested
+                	if (action != null && action.equals("update")) {
+
+                	    // Begin transaction
+                    	conn.setAutoCommit(false);
+
+                    	// Create the prepared statement and use it to
+                    	// UPDATE student values in the Students table.
+                    	pstmt = conn
+                    	    .prepareStatement("UPDATE categories SET category_name = ?, description = ?"
+                    	        + " WHERE category_id = ?");
+                    	pstmt.setString(1, request.getParameter("category_name"));
+                    	pstmt.setString(2, request.getParameter("description"));
+                    	pstmt.setInt(3, Integer.parseInt(request.getParameter("category_id")));
+
+                    	int rowCount = pstmt.executeUpdate();
+	
+    	                // Commit transaction
+        	            conn.commit();
+            	        conn.setAutoCommit(true);
+                	}
+            	%>
+            	<%-- -------- DELETE Code -------- --%>
+            	<%
+                	// Check if a delete is requested
+                	if (action != null && action.equals("delete")) {
+
+                    	// Begin transaction
+                    	conn.setAutoCommit(false);
+
+                    	// Create the prepared statement and use it to
+                    	// DELETE students FROM the Students table.
+                    	pstmt = conn
+                    	    .prepareStatement("DELETE FROM categories WHERE category_id = ?");
+
+                    	pstmt.setInt(1, Integer.parseInt(request.getParameter("category_id")));
+                    	int rowCount = pstmt.executeUpdate();
+
+                    	// Commit transaction
+                    	conn.commit();
+                    	conn.setAutoCommit(true);
+                	}
+            	%>
+            	<%-- -------- SELECT Statement Code -------- --%>
+            	<%
+                	// Create the statement
+                	Statement statement = conn.createStatement();
+
+                	// Use the created statement to SELECT
+                	// the student attributes FROM the Student table.
+                	rs = statement.executeQuery("SELECT * FROM categories");
+            	%>
+            	<table border ="1">
+            		<tr>
+            			<th>Category ID</th>
+            			<th>Category Name</th>
+                		<th>Description</th>
+            		</tr>
+            		<tr>
+        				<form action="./categories.jsp" method="POST">
+        					 <th>&nbsp;</th>
+            				<input type="hidden" name="action" value="insert"/>
+            				<th><input value="" name="category_name" size="20"/></th>
+            				<th><input value="" name="description" size="30"/></th>
+            				<th><input type="submit" value="Insert"/></th>
+           				</form>
+            		</tr>
+            		<%-- -------- Iteration Code -------- --%>
+            		<%
+                	// Iterate over the ResultSet
+                	while (rs.next()) {
+            		%>
+            			<tr>
+            				<form action="./categories.jsp" method="POST">
+                    		<input type="hidden" name="action" value="update"/>
+                    		<input type="hidden" name="category_id" value="<%=rs.getString("category_id")%>"/>	
+                    		
+                    		<%-- Get the category_id --%>
+                			<td>
+                    			<%=rs.getInt("category_id")%>
+                			</td>
+                			
+                    		<%-- Get the category name --%>
+                			<td>
+                    			<input value="<%=rs.getString("category_name")%>" name="category_name" size="20"/>
+                			</td>
+                			
+                			<%-- Get the category description --%>
+                			<td>
+                    			<input value="<%=rs.getString("description")%>" name="description" size="30"/>
+                			</td>
+            				<%-- Button --%>
+                			<td><input type="submit" value="update"></td>
+                			</form>
+                				<form action="./categories.jsp" method="POST">
+                    			<input type="hidden" name="action" value="delete"/>
+                    			<input type="hidden" value="<%=rs.getString("category_id")%>" name="category_id"/>
+                    			<%-- Button --%>
+                				<td><input type="submit" value="Delete"/></td>
+                			</form>
+            			</tr>
+            		<%
+                	} // End While
+            		%>
+            		<%-- -------- Close Connection Code -------- --%>
+            		<%
+                		// Close the ResultSet
+                		rs.close();
+
+                		// Close the Statement
+                		statement.close();
+
+                		// Close the Connection
+                		conn.close();
+            		} catch (SQLException e) {
+
+                		// Wrap the SQL exception in a runtime exception to propagate
+                		// it upwards
+                		throw new RuntimeException(e);
+            		}
+            		finally {
+                		// Release resources in a finally block in reverse-order of
+                		// their creation
+
+                		if (rs != null) {
+                    		try {
+                        		rs.close();
+                    		} catch (SQLException e) { } // Ignore
+                    			rs = null;
+                		}
+                		if (pstmt != null) {
+                    		try {
+                        		pstmt.close();
+                    		} catch (SQLException e) { } // Ignore
+                    			pstmt = null;
+                		}
+                		if (conn != null) {
+                    		try {
+                        		conn.close();
+                    		} catch (SQLException e) { } // Ignore
+                    			conn = null;
+                		}
+            		}
+            		%>
+            	</table>
+            </td>
+            </tr>
+      </table>
       
     </div>
+    
   </body>
 </html>
