@@ -29,8 +29,8 @@
     try{
         Class.forName("org.postgresql.Driver");
         conn = DriverManager.getConnection(
-          "jdbc:postgresql://localhost:5432/shopping?" +
-          "user=postgres&password=Ineas710");
+          "jdbc:postgresql://localhost:5432/Shopping_Application?" +
+          "user=postgres&password=postgres");
         if(action!=null && action.equals("select")){
           stmt=conn.createStatement();
           try {
@@ -38,7 +38,7 @@
           }catch(Exception e){name=null;}
           rs=stmt.executeQuery("SELECT * FROM users where name='"+name+"';");
           if(rs.next()) {
-            role=rs.getString(2);
+            role=rs.getString(3);
             session.setAttribute("name", name);
             session.setAttribute("role",role);
             response.sendRedirect("/CSE135/home");

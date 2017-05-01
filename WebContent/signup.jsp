@@ -83,20 +83,28 @@
     try{
         Class.forName("org.postgresql.Driver");
         conn = DriverManager.getConnection(
-          "jdbc:postgresql://localhost:5432/shopping?" +
-          "user=postgres&password=Ineas710");
+          "jdbc:postgresql://localhost:5432/Shopping_Application?" +
+          "user=postgres&password=postgres");
         
         if(action != null && action.equals("insert")){
       	  conn.setAutoCommit(false);
-      	  pstmt = conn.prepareStatement("INSERT INTO users (name, role, age, state) VALUES(?,?,?,?)");
+      	  pstmt = conn.prepareStatement("INSERT INTO users (name, age, role, state) VALUES(?,?,?,?)");
       	  try{ 
-      	    pstmt.setString(1,request.getParameter("name"));
-      	    if(request.getParameter("role").equals("")){
+      	    if(request.getParameter("name").equals("")){
+      	      pstmt.setString(1, n);
+      	    } else{ 
+      	      pstmt.setString(1, request.getParameter("name"));
+      	    }
+      	    if(request.getParameter("age").equals("")){
       	      pstmt.setString(2, n);
       	    } else{ 
-      	      pstmt.setString(2, request.getParameter("role"));
+      	      pstmt.setInt(2, Integer.parseInt(request.getParameter("age")));
+      	    }      	    
+      	    if(request.getParameter("role").equals("")){
+      	      pstmt.setString(3, n);
+      	    } else{ 
+      	      pstmt.setString(3, request.getParameter("role"));
       	    }
-      	    pstmt.setInt(3, Integer.parseInt(request.getParameter("age")));
       	    if(request.getParameter("state").equals("")) {
       	      pstmt.setString(4, n);
       	    } else{ 
@@ -107,6 +115,7 @@
       	    conn.setAutoCommit(true);
       	    response.sendRedirect("/CSE135/signupsuccess");
       	  }catch(Exception e){
+            //throw new RuntimeException(e);
       	    response.sendRedirect("/CSE135/signupfail");
       	  }
         }
