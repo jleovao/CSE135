@@ -4,17 +4,21 @@
 <html>
   <%
   String name=null;
-  if(session.getAttribute("name")!=null || !session.getAttribute("name").equals("")) {
-    name=(String) session.getAttribute("name");
-  }
-  else{name=null;}
-  
   String role=null;
-  if(session.getAttribute("role")!=null || !session.getAttribute("role").equals("")) {
-    role=(String) session.getAttribute("role");
+  try{
+    if(session.getAttribute("name")!=null || !session.getAttribute("name").equals("")) {
+      name=(String) session.getAttribute("name");
+    }
+    else{name=null;}
+  
+    if(session.getAttribute("role")!=null || !session.getAttribute("role").equals("")) {
+      role=(String) session.getAttribute("role");
+    }
+    else{role=null;}
+  }catch(Exception e){
+    name=null;
+    role=null;
   }
-  else{role=null;}
-
   %>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
