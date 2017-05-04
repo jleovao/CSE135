@@ -5,7 +5,7 @@ The "Categories" Page
 Assumption A: An owner can delete and/or update every category, regardless of whether he/she was the one who created the category.
 
 The "Product Order" Page
-Assumption: Persistent sessions
+Assumption: Persistent accross multiple visits
 
 The "Buy Shoppign Cart" page
 Assumption: The displayed price is the current price of the product.
