@@ -56,8 +56,8 @@
   </servlet>
   
   <servlet>
-    <servlet-name>cart</servlet-name>
-    <jsp-file>/cart.jsp</jsp-file>
+    <servlet-name>buy</servlet-name>
+    <jsp-file>/buy.jsp</jsp-file>
   </servlet>
   
   <servlet>
@@ -69,7 +69,10 @@
     <servlet-name>redirectaccess</servlet-name>
     <jsp-file>/redirectaccess.jsp</jsp-file>
   </servlet>
-  
+  <servlet>
+    <servlet-name>confirmation</servlet-name>
+    <jsp-file>/confirmation.jsp</jsp-file>
+  </servlet>
   
   <servlet-mapping>
     <servlet-name>login</servlet-name>
@@ -117,8 +120,8 @@
   </servlet-mapping>
   
   <servlet-mapping>
-    <servlet-name>cart</servlet-name>
-    <url-pattern>cart</url-pattern>
+    <servlet-name>buy</servlet-name>
+    <url-pattern>buy</url-pattern>
   </servlet-mapping>
   
   <servlet-mapping>
@@ -129,6 +132,10 @@
   <servlet-mapping>
     <servlet-name>redirectaccess</servlet-name>
     <url-pattern>redirectaccess</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>confirmation</servlet-name>
+    <url-pattern>confirmation</url-pattern>
   </servlet-mapping>
   
   <welcome-file-list>
