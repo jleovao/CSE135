@@ -38,11 +38,16 @@
       
       <div class="nav">
         <ul>
-          <li><a href="/CSE135/categories">Categories Page(owners)</a></li>
-          <li><a href="/CSE135/products">Products Page(owners)</a></li>
+          <%
+          if(role.equals("owner")){
+            out.println("<li><a href=\"/CSE135/categories\">Categories Page(owners)</a></li>"+
+                        "<li><a href=\"/CSE135/products\">Products Page(owners)</a></li>");
+          }
+          %>
           <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
           <li><a href="/CSE135/order">Product Order Page</a></li>
-          <li><a href="/CSE135/cart">Shopping Cart Page</a></li>
+          <li><a href="/CSE135/buy">Buy Shopping Cart</a></li>
+
         </ul>
       </div>
 
