@@ -19,9 +19,6 @@
     name=null;
     role=null;
   }
-  if(role.equals("customer")) {
-    response.sendRedirect("/CSE135/redirectaccess");
-  }
   %>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -86,7 +83,17 @@
             // Open a connection to the database using DriverManager
             conn = DriverManager.getConnection(
                 "jdbc:postgresql://localhost/Shopping_Application?" +
-                "user=postgres&password=7124804");
+                "user=postgres&password=postgres");
+            String action = request.getParameter("action");
+            
+            if(action!=null && action.equals("addcart")){
+              String addsku = request.getParameter("addsku");
+              System.out.println(addsku);
+              session.setAttribute("sku", addsku);
+              response.sendRedirect("/CSE135/order");
+            }
+              
+            
         %>
         
       </div>
@@ -173,8 +180,13 @@
           rs_product = product_stmnt.executeQuery(product_query);
           while(rs_product.next()) {
           %>
+          
+         
           <%-- A while loop to generate a row for each product based on user filtering --%>
           <tr>
+           <form action="/CSE135/browsing" method="post">
+           <input type="hidden" name="action" value="addcart"/>
+           <input type="hidden" name="addsku" value="<%=rs_product.getString("sku")%>"/>
             <%-- Get the product_name --%>
             <td>
             <%=rs_product.getString("product_name")%>
@@ -191,6 +203,8 @@
             <td>
             <%=rs_product.getBigDecimal("price")%>
             </td>
+            <td><input type="submit"  value="Add to Cart"></td>
+            </form>
           </tr>
           <%
           } // end while rs_product

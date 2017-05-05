@@ -27,11 +27,11 @@
     if(session.getAttribute("sku")!=null || !session.getAttribute("sku").equals("")) {
       sku=(String) session.getAttribute("sku");
     }
-    session.removeAttribute("sku");
+    
   }catch(Exception e){
     sku=null;
   }
-
+  System.out.println("SKU passed: "+sku);
   %>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
@@ -66,24 +66,7 @@
         }
         %>
     </div>
-    <div class="nav">
-      <ul>
-         <%
-          if(role.equals("owner")){
-            out.println("<li><a href=\"/CSE135/categories\">Categories Page(owners)</a></li>"+
-                        "<li><a href=\"/CSE135/products\">Products Page(owners)</a></li>");
-          }
-          %>
-          <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
-          <li><a href="/CSE135/order">Product Order Page</a></li>
-          <li><a href="/CSE135/buy">Buy Shopping Cart</a></li>
-        <%
-          if(role.equals("customer")){
-            out.println("<li><a href=\"/CSE135/buy\">Buy Shopping Cart</a></li>");
-          }
-          %>
-      </ul>
-    </div>
+    
     <h3>Your Shopping Cart</h3>
     <table>
       <tr>
@@ -150,11 +133,12 @@
             if(sku!=null || sku!=""){
               conn.setAutoCommit(false);
               stmt = conn.createStatement();
-              rs = stmt.executeQuery("SELECT * FROM items where sku='"+sku+"';");
+              rs = stmt.executeQuery("SELECT * FROM items where sku='"+sku+"' and id="+cart_id+";");
               if(rs.next()){
-                pstmt = conn.prepareStatement("UPDATE items SET qty=? where sku=?;");
+                pstmt = conn.prepareStatement("UPDATE items SET qty=? where sku=? and id=?;");
                 pstmt.setInt(1,rs.getInt("qty")+1);
                 pstmt.setString(2,sku);
+                pstmt.setInt(3,cart_id);
                 int rowCount = pstmt.executeUpdate();
                 conn.commit();
                 conn.setAutoCommit(true);
@@ -174,6 +158,7 @@
                   conn.setAutoCommit(true);
                 }
               }
+              session.removeAttribute("sku");
             }
             
           }catch (SQLException e){
@@ -302,7 +287,16 @@
           }
           
    %>
-   <a href="./buy">Buy Items</a>
+   <br>
+   <a href="/CSE135/buy">Buy Items</a>
+   <br>
+   <br>
+   <%
+     if(role.equals("owner")){
+       out.println("<li><a href=\"/CSE135/home\">Home</a></li><br>");
+     }
+   %>
+   <a href="/CSE135/browsing">Back to Browse</a>
   </body>
 
 </html>
