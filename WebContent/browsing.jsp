@@ -83,7 +83,7 @@
             // Open a connection to the database using DriverManager
             conn = DriverManager.getConnection(
                 "jdbc:postgresql://localhost/Shopping_Application?" +
-                "user=postgres&password=postgres");
+                "user=postgres&password=7124804");
             String action = request.getParameter("action");
             
             if(action!=null && action.equals("addcart")){
@@ -132,7 +132,7 @@
             <h2>Home</h2>
           <ul>  	
           	 <li><a href="./order.jsp">Product Order</a></li>
-          	 <li><a href="./cart.jsp">Shopping Cart</a></li>
+          	 <li><a href="./buy.jsp">Shopping Cart</a></li>
           </ul>
       </div>
       <div class = "DisplayTable">

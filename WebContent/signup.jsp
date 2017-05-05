@@ -84,7 +84,7 @@
         Class.forName("org.postgresql.Driver");
         conn = DriverManager.getConnection(
           "jdbc:postgresql://localhost:5432/Shopping_Application?" +
-          "user=postgres&password=postgres");
+          "user=postgres&password=7124804");
         
         if(action != null && action.equals("insert")){
       	  conn.setAutoCommit(false);

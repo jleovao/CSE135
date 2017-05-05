@@ -85,7 +85,7 @@
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection(
               "jdbc:postgresql://localhost/Shopping_Application?" +
-              "user=postgres&password=postgres");
+              "user=postgres&password=7124804");
             String action = request.getParameter("action");
            //System.out.println(request.getParameter("action") );
 

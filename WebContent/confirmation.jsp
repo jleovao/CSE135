@@ -71,7 +71,7 @@ try {
             Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection(
               "jdbc:postgresql://localhost/Shopping_Application?" +
-              "user=postgres&password=postgres");
+              "user=postgres&password=7124804");
             
             conn.setAutoCommit(false);
             stmt2 = conn.createStatement();
