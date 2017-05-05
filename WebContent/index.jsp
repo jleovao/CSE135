@@ -50,6 +50,11 @@
 
         </ul>
       </div>
+      <%
+      if(role.equals("customer")){
+        response.sendRedirect("/CSE135/browsing");
+      }
+      %>
 
     </div>
   </body>
