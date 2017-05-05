@@ -12,6 +12,7 @@ Page initially lists all products and its info and allows the user to filter by 
 
 The "Product Order" Page
 Assumption: Persistent accross multiple visits
+Transfer to browsing page involves providing a link to the Product Browsing.
 
 The "Buy Shopping Cart" page
 Assumption: The displayed price is the current price of the product.
