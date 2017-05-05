@@ -83,6 +83,7 @@
             	Connection conn = null;
             	PreparedStatement pstmt = null;
             	ResultSet rs = null;
+            	ResultSet rs2 = null;
             
             	try {
                 	// Registering Postgresql JDBC driver with the DriverManager
@@ -164,6 +165,7 @@
             	<%
                 	// Create the statement
                 	Statement statement = conn.createStatement();
+            	    Statement statement2 = conn.createStatement();
 
                 	// Use the created statement to SELECT
                 	// the student attributes FROM the Student table.
@@ -211,11 +213,17 @@
             				<%-- Button --%>
                 			<td><input type="submit" value="update"></td>
                 			</form>
-                				<form action="./categories.jsp" method="POST">
-                    			<input type="hidden" name="action" value="delete"/>
-                    			<input type="hidden" value="<%=rs.getString("category_id")%>" name="category_id"/>
-                    			<%-- Button --%>
-                				<td><input type="submit" value="Delete"/></td>
+                		    <form action="./categories.jsp" method="POST">
+                    		<input type="hidden" name="action" value="delete"/>
+                    		<input type="hidden" value="<%=rs.getString("category_id")%>" name="category_id"/>
+                    		<%-- Button --%>
+                    		<%
+                    		
+                    		rs2=statement2.executeQuery("select * from product where category_name='"+rs.getString("category_name")+"';");
+                    		if(!rs2.next()){
+                			  out.println("<td><input type=\"submit\" value=\"Delete\"/></td>");
+                    		}
+                    		%>
                 			</form>
             			</tr>
             		<%
@@ -247,6 +255,12 @@
                     		} catch (SQLException e) { } // Ignore
                     			rs = null;
                 		}
+                		if (rs2 != null) {
+                  		try {
+                      		rs2.close();
+                  		} catch (SQLException e) { } // Ignore
+                  			rs2 = null;
+              		}
                 		if (pstmt != null) {
                     		try {
                         		pstmt.close();
