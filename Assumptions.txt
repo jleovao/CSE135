@@ -4,8 +4,15 @@ Joseph Leovao A12478957
 The "Categories" Page
 Assumption A: An owner can delete and/or update every category, regardless of whether he/she was the one who created the category.
 
+The "Products" Page
+Page initially lists all products and its info and allows the user to filter by category and/or search
+
+The "Products Browsing"
+Page initially lists all products and its info and allows the user to filter by category and/or search
+
 The "Product Order" Page
 Assumption: Persistent accross multiple visits
+Transfer to browsing page involves providing a link to the Product Browsing.
 
-The "Buy Shoppign Cart" page
+The "Buy Shopping Cart" page
 Assumption: The displayed price is the current price of the product.
