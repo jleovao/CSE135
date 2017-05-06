@@ -89,7 +89,7 @@
         ResultSet rs_category = null;
         ResultSet rs_product = null;
         ResultSet rs_menu = null;
-        String action = null;
+        String tempAction = null;
             
         try {
         	// Registering Postgresql JDBC driver with the DriverManager
@@ -103,7 +103,9 @@
         <%-- -------- INSERT Code -------- --%>
         <%
         //try {
-        action = request.getParameter("action");
+        String action = request.getParameter("action");
+        tempAction = action;
+        
         // Check if an insertion is requested
         if (action != null && action.equals("insert")) {
           // Begin transaction
@@ -114,7 +116,7 @@
           .prepareStatement("INSERT INTO PRODUCT(product_name,sku,category_name,price) values(?, ?, ?, ?)");
           pstmt.setString(1, request.getParameter("name"));
           pstmt.setString(2, request.getParameter("sku"));
-          pstmt.setString(3, request.getParameter("category"));
+          pstmt.setString(3, request.getParameter("category_name"));
           pstmt.setBigDecimal(4, new BigDecimal(request.getParameter("price")));
           
           int rowCount = pstmt.executeUpdate();
@@ -177,7 +179,7 @@
         
       </div>
       <div class="searchBar">
-      	<form action="./products.jsp?category=<%=request.getParameter("category")%>&error=none" method="POST">
+      	<form action="./products.jsp?category=<%=request.getParameter("category_name")%>&error=none" method="POST">
       	  <input type="text" name="searchValue">
       	  <input type="submit" value="Search">
       	</form>
@@ -240,7 +242,7 @@
               <th><input value="" name="name"/></th>
               <th><input value="" name="sku"/></th>
               <th>
-                <select name="category">
+                <select name="category_name">
                 <%
                 Statement category_stmnt = conn.createStatement();
                 // Use the created statement to SELECT
@@ -264,39 +266,39 @@
           // 1-No category chosen, no search filter
           String product_query = null;
           if(category == null && searchFilter == null) {
-        	//out.println("Everything is null!");
+        	out.println("Everything is null!");
             product_query="SELECT product_id,product_name,sku,category_name,price FROM product";
           }
           // 2-No category chosen, search filter applied
-          else if((category == null || category.equals("null")) && (searchFilter != null || !searchFilter.equals("null"))) {
-            //out.println("no category, searching for products containing: " + searchFilter);
+          else if((category == null || category.equals("null")) && (searchFilter != null && !searchFilter.equals("null"))) {
+            out.println("no category, searching for products containing: " + searchFilter);
             product_query="SELECT product_id,product_name,sku,category_name,price FROM product " 
                                                   + "WHERE product_name LIKE '%" + searchFilter + "%'";           
           }
           // 3-User wants to display all products, no search filter
           else if(category.equals("AllProducts") && (searchFilter == null || searchFilter.equals("null"))) {
-            //out.println("AllProducts no searchFilter...");
+            out.println("AllProducts no searchFilter...");
             product_query="SELECT product_id,product_name,sku,category_name,price FROM product";
           }
           // 4-User chose a category, no search filter
-          else if((category != null || !category.equals("null")) && !category.equals("AllProducts") && (searchFilter == null || searchFilter.equals("null"))) {
-            //out.println("category chosen, no search filter...");
+          else if((category != null && !category.equals("null")) && !category.equals("AllProducts") && (searchFilter == null || searchFilter.equals("null"))) {
+            out.println("category chosen, no search filter...");
             product_query="SELECT product_id,product_name,sku,category_name,price FROM product WHERE category_name = '"+category+"'";
           }
           // 5-User wants to display all products, search filter applied
-          else if(category.equals("AllProducts") && (searchFilter != null || !searchFilter.equals("null"))) {
-            //out.println("All products, search filter applied...");
+          else if(category.equals("AllProducts") && (searchFilter != null && !searchFilter.equals("null"))) {
+            out.println("All products, search filter applied...");
             product_query="SELECT product_id,product_name,sku,category_name,price FROM product " 
                                                   + "WHERE product_name LIKE '%" + searchFilter + "%'";
           }
           // 6-User chose a category, search filter applied
-          else if(((category != null || !category.equals("null")) && category != "AllProducts") && searchFilter != null) {
-            //out.println("Category chosen, search filter applied...");
+          else if((category != null || !category.equals("null")) && category != "AllProducts" && (searchFilter != null && !searchFilter.equals("null"))) {
+            out.println("Category chosen, search filter applied...");
             product_query="SELECT product_id,product_name,sku,category_name,price FROM product WHERE category_name = '"+category+"' AND product_name LIKE '%"+searchFilter+"%'";
           }
           // Default: Display all products
           else {
-        	  //out.println("Reached default: display everything");
+        	  out.println("Reached default: display everything");
         	  product_query="SELECT product_id,product_name,sku,category_name,price from product";  
           }
           
@@ -305,7 +307,7 @@
           %>
           <%-- A while loop to generate a row for each product based on user filtering --%>
           <tr>
-            <form action="./products.jsp?category=<%=rs_product.getString("category_name")%>&searchValue=<%=searchFilter%>&error=none" method="POST">
+            <form action="./products.jsp?category=<%=category%>&searchValue=<%=searchFilter%>&error=none" method="POST">
             <input type="hidden" name="action" value="update"/>
             <input type="hidden" name="id" value="<%=rs_product.getInt("product_id")%>"/>
             
@@ -368,11 +370,11 @@
         } catch (SQLException e) {
           // Wrap the SQL exception in a runtime exception to propagate
           // it upwards
-          if(action.equals("insert")) { %>
+          if(tempAction.equals("insert")) { %>
 		    <p>Error inserting product!</p>
             <%response.sendRedirect("./products.jsp?category=" + category + "&searchValue=" + searchFilter + "&error=insert");  
           }
-          else if(action.equals("update")) { %>
+          else if(tempAction.equals("update")) { %>
         	  <p>Error updating product!</p>
         	<%response.sendRedirect("/CSE135/products.jsp?category=" + category + "&searchValue=" + searchFilter + "&error=update");
           }
