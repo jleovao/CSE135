@@ -57,9 +57,9 @@
         String category = request.getParameter("category");
         String searchFilter = request.getParameter("searchValue");
         if(name!=null){
-          out.println("<h4>Hello, "+name+"!</h4>");
-          //out.println("<p>Category filter: "+category+"</p>");
-          //out.println("<p>Search filter: "+searchFilter+"</p>");
+          out.println("<h4>Hello, "+role + " " +name+"!</h4>");
+          out.println("<p>Category filter: "+category+"</p>");
+          out.println("<p>Search filter: "+searchFilter+"</p>");
         }
         else{
           response.sendRedirect("/CSE135/redirectlogin");
@@ -98,7 +98,7 @@
         
       </div>
       <div class="searchBar">
-      	<form action="./browsing.jsp?category=<%=request.getParameter("category")%>" method="POST">
+      	<form action="./browsing.jsp?category=<%=category%>&error=none" method="POST">
       	  <input type="text" name="searchValue">
       	  <input type="submit" value="Search">
       	</form>
@@ -130,7 +130,16 @@
           <li><a href="./browsing.jsp?category=AllProducts&searchValue=<%=request.getParameter("searchValue")%>">All Products</a></li>
           </ul>
             <h2>Home</h2>
-          <ul>  	
+          <ul>
+          	<%
+          	 if(role.equals("owner")) {
+          	 %>
+          	 <li><a href="./categories.jsp">Categories Page</a></li>
+          	 <li><a href="./products.jsp">Products Page</a></li>
+          	 <li><a href="./browsing.jsp">Product Browsing</a></li>
+          	 <%
+          	 }
+          	 %>	
           	 <li><a href="./order.jsp">Product Order</a></li>
           	 <li><a href="./buy.jsp">Shopping Cart</a></li>
           </ul>
@@ -145,9 +154,9 @@
 	      </tr>
           <%
           Statement product_stmnt = conn.createStatement();
+          /*
           // 1-No category chosen, no search filter
           String product_query = null;
-          //if((category == null || category.equals("null")) && (searchFilter == null || searchFilter.isEmpty()) || searchFilter.equals("null")) {
           if(category == null && searchFilter == null) {
             product_query="SELECT product_name,sku,category_name,price FROM product";
           }
@@ -176,6 +185,46 @@
           // Default: Display all products
           else {
         	  product_query="SELECT product_name,sku,category_name,price from product";  
+          }
+          */
+          
+       // 1-No category chosen, no search filter
+          String product_query = null;
+          if(category == null && searchFilter == null) {
+        	//out.println("Everything is null!");
+            product_query="SELECT product_id,product_name,sku,category_name,price FROM product";
+          }
+          // 2-No category chosen, search filter applied
+          else if((category == null || category.equals("null")) && (searchFilter != null && !searchFilter.equals("null"))) {
+            //out.println("no category, searching for products containing: " + searchFilter);
+            product_query="SELECT product_id,product_name,sku,category_name,price FROM product " 
+                                                  + "WHERE product_name LIKE '%" + searchFilter + "%'";           
+          }
+          // 3-User wants to display all products, no search filter
+          else if(category.equals("AllProducts") && (searchFilter == null || searchFilter.equals("null"))) {
+            //out.println("AllProducts no searchFilter...");
+            product_query="SELECT product_id,product_name,sku,category_name,price FROM product";
+          }
+          // 4-User chose a category, no search filter
+          else if((category != null && !category.equals("null")) && !category.equals("AllProducts") && (searchFilter == null || searchFilter.equals("null"))) {
+            //out.println("category chosen, no search filter...");
+            product_query="SELECT product_id,product_name,sku,category_name,price FROM product WHERE category_name = '"+category+"'";
+          }
+          // 5-User wants to display all products, search filter applied
+          else if(category.equals("AllProducts") && (searchFilter != null && !searchFilter.equals("null"))) {
+            //out.println("All products, search filter applied...");
+            product_query="SELECT product_id,product_name,sku,category_name,price FROM product " 
+                                                  + "WHERE product_name LIKE '%" + searchFilter + "%'";
+          }
+          // 6-User chose a category, search filter applied
+          else if((category != null || !category.equals("null")) && category != "AllProducts" && (searchFilter != null && !searchFilter.equals("null"))) {
+            //out.println("Category chosen, search filter applied...");
+            product_query="SELECT product_id,product_name,sku,category_name,price FROM product WHERE category_name = '"+category+"' AND product_name LIKE '%"+searchFilter+"%'";
+          }
+          // Default: Display all products
+          else {
+        	  //out.println("Reached default: display everything");
+        	  product_query="SELECT product_id,product_name,sku,category_name,price from product";  
           }
           rs_product = product_stmnt.executeQuery(product_query);
           while(rs_product.next()) {

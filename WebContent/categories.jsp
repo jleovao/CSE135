@@ -194,7 +194,7 @@
             			<tr>
             				<form action="./categories.jsp" method="POST">
                     		<input type="hidden" name="action" value="update"/>
-                    		<input type="hidden" name="category_id" value="<%=rs.getString("category_id")%>"/>	
+                    		<input type="hidden" name="category_id" value="<%=rs.getInt("category_id")%>"/>	
                     		
                     		<%-- Get the category_id --%>
                 			<td>
@@ -215,7 +215,7 @@
                 			</form>
                 		    <form action="./categories.jsp" method="POST">
                     		<input type="hidden" name="action" value="delete"/>
-                    		<input type="hidden" value="<%=rs.getString("category_id")%>" name="category_id"/>
+                    		<input type="hidden" value="<%=rs.getInt("category_id")%>" name="category_id"/>
                     		<%-- Button --%>
                     		<%
                     		
