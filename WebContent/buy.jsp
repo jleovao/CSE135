@@ -130,8 +130,7 @@
       while(rs.next()){
         each = rs.getDouble("price");
         quant = rs.getInt("qty");
-        temp = (double)quant * each;
-        total = temp + total;
+        total = each + total;
       } //end while 
       out.println("<br>Total Price: $" +total);
     

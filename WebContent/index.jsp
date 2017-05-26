@@ -41,7 +41,8 @@
           <%
           if(role.equals("owner")){
             out.println("<li><a href=\"/CSE135/categories\">Categories Page(owners)</a></li>"+
-                        "<li><a href=\"/CSE135/products\">Products Page(owners)</a></li>");
+                        "<li><a href=\"/CSE135/products\">Products Page(owners)</a></li>"+
+                        "<li><a href=\"/CSE135/analytics\">Sales Analytics</a></li>");
           }
           %>
           <li><a href="/CSE135/browsing">Product Browsing Page</a></li>

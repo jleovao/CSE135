@@ -9,6 +9,7 @@
   double price = 0;
   double total=0;
   int cart_id = 0;
+  int quant =0;
   try{
     if(session.getAttribute("name")!=null || !session.getAttribute("name").equals("")) {
       name=(String) session.getAttribute("name");
@@ -90,6 +91,7 @@
            //System.out.println(request.getParameter("action") );
 
             if(action!=null && action.equals("update")){
+              quant = Integer.parseInt(request.getParameter("qty"));
               if(request.getParameter("qty").equals("0")){
                 conn.setAutoCommit(false);
 
@@ -104,7 +106,7 @@
                 conn.setAutoCommit(false);
                 pstmt = conn.prepareStatement("UPDATE items SET qty=?,price=? where pid=?;");
                 pstmt.setInt(1,Integer.parseInt(request.getParameter("qty")));
-                pstmt.setDouble(2,Double.parseDouble(request.getParameter("each")));
+                pstmt.setDouble(2,((Double.parseDouble(request.getParameter("each")))*quant));
                 pstmt.setInt(3,Integer.parseInt(request.getParameter("pid")));
                 int rowCount = pstmt.executeUpdate();
                 conn.commit();
@@ -135,10 +137,12 @@
               stmt = conn.createStatement();
               rs = stmt.executeQuery("SELECT * FROM items where sku='"+sku+"' and id="+cart_id+";");
               if(rs.next()){
-                pstmt = conn.prepareStatement("UPDATE items SET qty=? where sku=? and id=?;");
+                quant = rs.getInt("qty")+1;
+                pstmt = conn.prepareStatement("UPDATE items SET qty=?, price=? where sku=? and id=?;");
                 pstmt.setInt(1,rs.getInt("qty")+1);
-                pstmt.setString(2,sku);
-                pstmt.setInt(3,cart_id);
+                pstmt.setDouble(2,((Double.parseDouble(request.getParameter("each")))*quant));
+                pstmt.setString(3,sku);
+                pstmt.setInt(4,cart_id);
                 int rowCount = pstmt.executeUpdate();
                 conn.commit();
                 conn.setAutoCommit(true);
@@ -147,12 +151,13 @@
                 stmt = conn.createStatement();
                 rs = stmt.executeQuery("SELECT * FROM product where sku='"+sku+"';");
                 if(rs.next()){
+                  quant =1;
                   price = rs.getDouble("price");
                   pstmt = conn.prepareStatement("INSERT INTO items(id,sku,qty,price) VALUES(?,?,?,?)");
                   pstmt.setInt(1, cart_id);
                   pstmt.setString(2, sku);
                   pstmt.setInt(3,1);
-                  pstmt.setDouble(4, price);
+                  pstmt.setDouble(4, (price*quant));
                   int rowCount = pstmt.executeUpdate();
                   conn.commit();
                   conn.setAutoCommit(true);
@@ -233,13 +238,11 @@
    <%
    total=0;
    double each=0;
-   int quant=0;
    double temp=0;
    while(rs.next()){
      each = rs.getDouble("price");
      quant = rs.getInt("qty");
-     temp = (double)quant * each;
-     total = temp + total;
+     total = each + total;
    } //end while
      
    out.println("<br>Total Price: $" +total);
