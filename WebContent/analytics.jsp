@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
+    import="java.util.ArrayList" pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
   <head>
@@ -53,6 +53,8 @@
     else if(role.equals("customer") || role.equals("")) {
       response.sendRedirect("/CSE135/redirectaccess");
     }
+    int rowlimit=20;
+    int collimit=10;
     %>
   
     <%@ page import="java.sql.*"%>
@@ -68,13 +70,16 @@
     ResultSet rs3=null;
     ResultSet rs4=null;
     ResultSet rs5=null;
-    String[] prodarray = new String[2];
+    ArrayList<String> catlist = new ArrayList<String>();
     String rows;
     String order;
-    String action;
+    String action=null;
+    String filter;
+    String filterquery;
     int ind=0;
     int countrow;
     int countcol;
+    boolean showtable=true;
     boolean showcolbut = false;
     boolean showrowbut = false;
     try{
@@ -95,16 +100,18 @@
     }catch(Exception e){
       countcol=0;
     }
+    
+    
     action=request.getParameter("action");
     if(action!=null && action.equals("nextrow")){
-      // TODO: change back to 20
-      countrow= countrow+2;
+      countrow= countrow+rowlimit;
       session.setAttribute("countrow", countrow);
+      session.setAttribute("tableflag",false);
     }
     if(action!=null && action.equals("nextcolumn")){
-      // TODO: change back to 10
-      countcol=countcol+2;
+      countcol=countcol+collimit;
       session.setAttribute("countcol", countcol);
+      session.setAttribute("tableflag",false);
     }
     if(action!=null && action.equals("start")){
       session.setAttribute("customerstate", request.getParameter("customerstate"));
@@ -114,14 +121,21 @@
       session.setAttribute("countrow", 0);
       session.setAttribute("countcol", 0);
     }
+    if(action!=null && action.equals("categoryfilter")){
+      session.setAttribute("selectfilter", request.getParameter("filterdrop")); 
+    }
     if(action!=null && action.equals("restart")){
       session.removeAttribute("customerstate");
       session.removeAttribute("orderby");
+      session.removeAttribute("selectfilter");
+      session.removeAttribute("tableflag");
       countcol =0;
       countrow=0;
       session.setAttribute("countrow", 0);
       session.setAttribute("countcol", 0);
     }
+
+    
     try{
       if(session.getAttribute("customerstate")!=null || !session.getAttribute("customerstate").equals("")){
         rows=(String)session.getAttribute("customerstate");
@@ -135,8 +149,34 @@
         }
     }catch(Exception e){
       rows="";
-      order="";
+      order="";   
     }
+    try{
+      if (session.getAttribute("selectfilter")!=null || !session.getAttribute("selectfilter").equals("")){
+        filterquery="where p.category_name='"+(String)(session.getAttribute("selectfilter"))+"' ";
+        filter=(String)(session.getAttribute("selectfilter"));
+      }else {
+        filter="";
+        filterquery="";
+      }
+      if (session.getAttribute("selectfilter")!=null && session.getAttribute("selectfilter").equals("All")){
+        filter="";
+        filterquery="";
+      }
+    }catch(Exception e){
+      filter="";
+      filterquery="";
+    }
+    try{
+      if (session.getAttribute("tableflag")!=null || !session.getAttribute("tableflag").equals("")){
+        showtable=(Boolean)(session.getAttribute("tableflag"));
+      }else {
+        showtable=true;
+      }
+    } catch (Exception e) {
+      showtable=true;
+    }
+    
     %>
     <div class="header">
       <h1>Sales Analytics</h1>
@@ -160,23 +200,113 @@
         <li><a href="/CSE135/buy">Buy Shopping Cart</a></li>
       </ul>
     </div>
+    <!-- choose row and column -->
+    <%if(showtable) {%>
     <table>
-    <% 
-    if ((!rows.equals("") && !order.equals(""))){ 
-      try{
-        Class.forName("org.postgresql.Driver");
-        conn = DriverManager.getConnection(
-            "jdbc:postgresql://localhost/Shopping_Application?" +
-                "user=postgres&password=7124804");
+      <tr>
+        <form action="/CSE135/analytics" method="post">
+          <input type="hidden" name="action" value="start">
+          <td>Rows Column:
+            <select name="customerstate">
+              <% if (rows.equals("")||rows.equals("customer")){ %>
+                <option value="customer">Customer</option>
+              <%} %>
+              <option value="state">State</option>
+              <% if (rows.equals("state")){ %>
+                <option value="customer">Customer</option>
+              <%} %>
+            </select>
+          </td>
+          <td>Order By:
+            <select name="orderby">
+              <% if (order.equals("")||order.equals("alphabetical")){ %>
+                <option value="alphabetical">Alphabetical</option>
+              <%} %>
+              <option value="top-k">Top-K</option>
+              <% if (order.equals("top-k")){ %>
+                <option value="alphabetical">Alphabetical</option>
+              <%} %>
+            </select>
+          </td>
+          <td>
+            <input type="submit" value="Run Query">
+          </td>
+        </form>
+      </tr>
+    </table> 
+    
+    <%
+    }
+    try{
+      Class.forName("org.postgresql.Driver");
+      conn = DriverManager.getConnection(
+          "jdbc:postgresql://localhost/Shopping_Application?" +
+          "user=postgres&password=7124804");
       
-        stmt = conn.createStatement();
-        stmt2 = conn.createStatement();
-        stmt3 = conn.createStatement();
-        stmt4 = conn.createStatement();
-        stmt5 = conn.createStatement();
-        
+      stmt = conn.createStatement();
+      stmt2 = conn.createStatement();
+      stmt3 = conn.createStatement();
+      stmt4 = conn.createStatement();
+      stmt5 = conn.createStatement();
+      
+      %>      
+      <!-- category filter -->
+      <table>
+        <tr>
+          <td>Category Filter: </td>
+          <td>
+            <% 
+            rs1=stmt.executeQuery("select category_name from categories");
+            while(rs1.next()){
+              catlist.add(rs1.getString("category_name"));
+            }
+            %>
+            <form action="/CSE135/analytics" method="post">
+              <input type="hidden" name="action" value="categoryfilter">
+              <select name="filterdrop">
+              <%
+                if(filter.equals("")||filter.equals("All")){
+                  %>
+                  <option value="All">All</option>
+                  <%
+                  for(String check:catlist){
+                    %>
+                    <option value=<%=check%>><%=check%></option>
+                    <%
+                  }
+                }else{
+                  %>
+                  <option value=<%=filter%>><%=filter%></option>
+                  <%
+                  for(String check:catlist){
+                    if(!check.equals(filter)){
+                    %>
+                    <option value=<%=check%>><%=check%></option>
+                    <%
+                    }
+                  }
+                  %>
+                  <option value="All">All</option>
+                  <%
+                }
+              %>
+              </select>
+              <input type="submit" value="Filter">
+            </form>
+          </td>
+        </tr>
+      </table>
+      <!-- 2-d chart that displays report -->
+      
+      <%
+      if ((!rows.equals("") && !order.equals(""))){  
+        %>
+        Displaying rows <%=countrow+1%> - <%=countrow+rowlimit %>
+        <br>
+        Displaying columns <%=countcol+1 %> - <%=countcol+collimit %>
+        <%
         if(order.equals("alphabetical")){
-          rs2=stmt2.executeQuery("select product_name from product order by product_name limit 2 offset "+countcol);
+          rs2=stmt2.executeQuery("select p.product_name from product p "+filterquery+" order by p.product_name limit "+collimit+" offset "+countcol);
           %>
           <table border="1">
             <tr>
@@ -187,6 +317,8 @@
               <td><b>State</b></td>
               <%
               }
+
+              String[] prodarray = new String[collimit];
               ind=0;
               while(rs2.next()){
                 prodarray[ind]=rs2.getString("product_name");
@@ -197,15 +329,14 @@
                 }
               %>
             </tr>
-          <%
-          
-          rs3=stmt3.executeQuery("select product_name from product order by product_name limit 2 offset "+(countcol+2));
+          <%        
+          rs3=stmt3.executeQuery("select p.product_name from product p "+filterquery+" order by p.product_name limit "+collimit+" offset "+(countcol+collimit));
           if(rs3.next()){
             showcolbut= true;
           }
           //if alphabetical customer
           if(rows.equals("customer")){
-          rs1=stmt.executeQuery("select name from users order by name limit 2 offset "+countrow);
+          rs1=stmt.executeQuery("select name from users order by name limit "+rowlimit+" offset "+countrow);
             while (rs1.next()){
               %>
               <tr>
@@ -215,15 +346,13 @@
                   <td><%=customername %></td>
                   <%             
                   for(int i=0;i<prodarray.length;i++){
-                    rs4=stmt4.executeQuery("select sum(i.qty), i.price from items i, carts c, product p where c.purchase_date is not null and i.id=c.id and c.name='"+customername+"' and p.sku=i.sku and p.product_name='"+prodarray[i]+"' group by i.price");
-                    double quant = 0;
+                    rs4=stmt4.executeQuery("select  sum(i.price) from items i, carts c, product p where c.purchase_date is not null and i.id=c.id and c.name='"+customername+"' and p.sku=i.sku and p.product_name='"+prodarray[i]+"' group by i.sku");
                     double price = 0;
                     double total = 0;
                     if(prodarray[i]!=null){
                       while(rs4.next()){
-                        quant = (double)rs4.getInt(1);
-                        price=rs4.getDouble("price");
-                        total=total +(quant*price);
+                        price=rs4.getDouble(1);
+                        total=total +price;
                       }
                       %>
                       <td><%=total %></td>
@@ -234,32 +363,107 @@
               </tr>
               <%
             }         
-            rs5=stmt5.executeQuery("select name from users order by name limit 2 offset "+(countrow+2));
+            rs5=stmt5.executeQuery("select name from users order by name limit "+rowlimit+" offset "+(countrow+rowlimit));
             if(rs5.next()){
               showrowbut= true;
             }
           }//end if alphabet customer
           //if alphabetical state
           if(rows.equals("state")){
-            rs1=stmt.executeQuery("select state from users group by state order by state limit 2 offset "+countrow);
-              while (rs1.next()){
+            rs1=stmt.executeQuery("select state from users group by state order by state limit "+rowlimit+" offset "+countrow);
+            while (rs1.next()){
+              %>
+              <tr>
+                <%
+                  String statename = rs1.getString("state");
+                  %>
+                  <td><%=statename %></td>
+                  <%             
+                  for(int i=0;i<prodarray.length;i++){
+                    rs4=stmt4.executeQuery("select sum(i.price) from users u, items i, carts c, product p where c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='"+statename+"' and p.sku=i.sku and p.product_name='"+prodarray[i]+"' group by i.sku");
+                    double quant = 0;
+                    double price = 0;
+                    double total = 0;
+                    if(prodarray[i]!=null){
+                      while(rs4.next()){
+                        price=rs4.getDouble(1);
+                        total=total +(price);
+                      }
+                      %>
+                      <td><%=total %></td>
+                      <%
+                    }
+                  }
+                %>
+              </tr>
+              <%
+            }         
+            rs5=stmt5.executeQuery("select state from users group by state order by state limit "+rowlimit+" offset "+(countrow+rowlimit));
+            if(rs5.next()){
+              showrowbut= true;
+            }
+          }//end if alphabet state
+          %>
+          </table>
+          <%         
+        } //end if alphabetical
+        // if top-k
+        if(order.equals("top-k")){
+          if (!filterquery.equals("")){
+            filterquery = "and p.category_name='"+filter+"'";
+          }
+
+          rs1=stmt.executeQuery("select p.sku,sum(i.price) as totalsum from items i,product p where p.sku=i.sku "+filterquery+" group by p.sku union (select p.sku, 0 as totalsum from product p where p.sku not in( select i.sku from items i) "+filterquery+") order by totalsum desc limit "+collimit+" offset "+countcol);
+          %>
+          
+          <table border="1">
+            <tr>
+              <%if(rows.equals("customer")){ %>
+              <td><b>Customer Name</b></td>
+              <%}
+              if(rows.equals("state")){%>
+              <td><b>State</b></td>
+              <%
+              }
+              ind=0;
+              String[] prodarray=new String[collimit];
+              while(rs1.next()){
+                String skuorder = rs1.getString("sku");
+                rs2=stmt2.executeQuery("select p.product_name from product p where p.sku='"+skuorder+"'" );
+                if(rs2.next()){
+                  System.out.println(ind+" "+rs2.getString("product_name"));
+                  prodarray[ind]=rs2.getString("product_name");
+                }
+                %>
+                <td><%=prodarray[ind] %></td>
+                <%
+                ind++;
+                }
+              %>
+            </tr>
+            <%
+            rs3=stmt3.executeQuery("select p.sku,sum(i.price) as totalsum from items i,product p where p.sku=i.sku "+filterquery+" group by p.sku union (select p.sku, 0 as totalsum from product p where p.sku not in( select i.sku from items i)"+filterquery+") order by totalsum desc limit "+collimit+" offset "+(countcol+collimit));
+            if(rs3.next()){
+              showcolbut= true;
+            }
+            if(rows.equals("customer")){
+              rs4 = stmt4.executeQuery("select c.name, sum(i.price) from carts c,items i,product p where c.id=i.id and p.sku=i.sku "+filterquery+" group by c.name union (select u.name,0 from users u where u.name not in (select c.name from carts c)) order by 2 desc limit "+rowlimit+" offset "+countrow);
+              while(rs4.next()){
                 %>
                 <tr>
                   <%
-                    String statename = rs1.getString("state");
+                    String customername = rs4.getString("name");
                     %>
-                    <td><%=statename %></td>
+                    <td><%=customername %></td>
                     <%             
                     for(int i=0;i<prodarray.length;i++){
-                      rs4=stmt4.executeQuery("select sum(i.qty), i.price from users u, items i, carts c, product p where c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='"+statename+"' and p.sku=i.sku and p.product_name='"+prodarray[i]+"' group by i.price");
-                      double quant = 0;
+                      rs5=stmt5.executeQuery("select  sum(i.price) from items i, carts c, product p where c.purchase_date is not null and i.id=c.id and c.name='"+customername+"' and p.sku=i.sku and p.product_name='"+prodarray[i]+"' group by i.sku");
                       double price = 0;
                       double total = 0;
                       if(prodarray[i]!=null){
-                        while(rs4.next()){
-                          quant = (double)rs4.getInt(1);
-                          price=rs4.getDouble("price");
-                          total=total +(quant*price);
+                        while(rs5.next()){
+                          price=rs5.getDouble(1);
+                          total=total +(price);
                         }
                         %>
                         <td><%=total %></td>
@@ -269,55 +473,66 @@
                   %>
                 </tr>
                 <%
-              }         
-              rs5=stmt5.executeQuery("select state from users group by state order by state limit 2 offset "+(countrow+2));
-              if(rs5.next()){
+              }//end while get customer name
+              rs1=stmt.executeQuery("select c.name, sum(i.price) from carts c,items i,product p where c.id=i.id and p.sku=i.sku "+filterquery+" group by c.name union (select u.name,0 from users u where u.name not in (select c.name from carts c)) order by 2 desc limit "+rowlimit+" offset "+(countrow+rowlimit));
+              if(rs1.next()){
                 showrowbut= true;
               }
-            }//end if alphabet state
-          %>
-          </table>
-          <%         
-        } //end if alphabetical
-      //TODO: Figure out query statements for top-k
-        if(order.equals("top-k")){
-          stmt.executeQuery("select SUM(total_price),name from carts group by name order by SUM(total_price) desc limit "+countrow+",20");
-        }
-      }catch(Exception e){
-      
+            }//end if customer top-k
+            
+            if(rows.equals("state")){
+              rs4=stmt4.executeQuery("select u.state, sum(i.price) from carts c, users u,items i, product p where u.name=c.name and c.id=i.id and p.sku=i.sku "+filterquery+" group by u.state union (select u.state,0 from users u where u.state not in (select u.state from users u,carts c where u.name = c.name)) order by 2 desc limit "+rowlimit+" offset "+countrow);
+              while(rs4.next()){
+                %>
+                <tr>
+                  <%
+                    String statename = rs4.getString("state");
+                    %>
+                    <td><%=statename %></td>
+                    <%             
+                    for(int i=0;i<prodarray.length;i++){
+                      rs5=stmt5.executeQuery("select sum(i.price) from users u, items i, carts c, product p where c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='"+statename+"' and p.sku=i.sku and p.product_name='"+prodarray[i]+"' group by i.sku");
+                      double quant = 0;
+                      double price = 0;
+                      double total = 0;
+                      if(prodarray[i]!=null){
+                        while(rs5.next()){
+                          price=rs5.getDouble(1);
+                          total=total +(price);
+                        }
+                        %>
+                        <td><%=total %></td>
+                        <%
+                      }
+                    }
+                  %>
+                </tr>
+                <%
+              }
+              rs1=stmt.executeQuery("select u.state, sum(i.price) from carts c, users u,items i, product p where u.name=c.name and c.id=i.id and p.sku=i.sku "+filterquery+" group by u.state union (select u.state,0 from users u where u.state not in (select u.state from users u,carts c where u.name = c.name)) order by 2 desc limit "+rowlimit+" offset "+(countrow+rowlimit));
+              if(rs1.next()){
+                showrowbut= true;
+              }
+            }
+            %>
+          </table>          
+          <%        
+        }//end if top-k
       }
       %>
-    
-    </table>
-    <%  
-    } else {
+      </table>
+      
+      <%
+    }catch(Exception e){      
+      
+    }
     %>
-    <table>
-      <tr>
-        <form action="/CSE135/analytics" method="post">
-          <input type="hidden" name="action" value="start">
-          <td>Rows Column:
-            <select name="customerstate">
-              <option value="customer">Customer</option>
-              <option value="state">State</option>
-            </select>
-          </td>
-          <td>Order By:
-            <select name="orderby">
-              <option value="alphabetical">Alphabetical</option>
-              <option value="top-k">Top-K</option>
-            </select>
-          </td>
-          <td>
-            <input type="submit" value="Run Query">
-          </td>
-        </form>
-      </tr>
-    </table>
-    <% } // end else %>
+
+    
     <%
     if((!rows.equals("") && !order.equals(""))){
     %>
+    <!-- next X buttons -->
     <table>
       <tr>
       <%
@@ -348,6 +563,7 @@
     <%
     if((!rows.equals("") && !order.equals(""))){
     %>
+    <!-- start over button -->
     <form action="/CSE135/analytics" method="post">
       <input type="hidden" name="action" value="restart">
       <input type="submit" value="Start Over">
