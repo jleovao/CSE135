@@ -1,0 +1,105 @@
+CODE:
+  CREATE INDEX CAT_IND ON PRODUCT (CATEGORY_NAME)
+  CREATE INDEX CART_IND ON ITEMS(ID)CREATE INDEX CART_IND ON ITEMS(ID)
+  
+BEST INDEX CHOICE:
+  INDEX FOR PRODUCT ON CATEGORY NAME
+  CREATE INDEX CAT_IND ON PRODUCT (CATEGORY_NAME)
+
+RUN TIME AVERAGES:
+  LARGE DATABASE: 10000 USERS 10 CATEGORIES 1000 PRODUCT 5000 SALES
+    QUERY:"select p.product_name from product p  order by p.product_name"
+      AVG TIME: 417 ms
+    QUERY:"select name from users order by name"
+      AVG TIME: 525 ms
+    QUERY:"select  sum(i.price) from items i, carts c, product p where c.purchase_date is
+              not null and i.id=c.id and c.name='CUST_1' and p.sku=i.sku and 
+              p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 497 ms
+    QUERY:"select state from users group by state order by state"
+      AVG TIME: 422ms
+    QUERY:"select sum(i.price) from users u, items i, carts c, product p where 
+            c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='AL' 
+            and p.sku=i.sku and p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 407 ms
+    QUERY:"select p.sku,sum(i.price) as totalsum from items i,product p where p.sku=i.sku 
+            AND p.category_name='CAT_1' group by p.sku union (select p.sku, 0 as totalsum 
+            from product p where p.sku not in( select i.sku from items i)AND 
+            P.CATEGORY_NAME='CAT_1') order by totalsum desc"
+      AVG TIME: 447ms
+    QUERY:"select p.product_name from product p where p.sku='SKU_1_13'"
+      AVG TIME: 414 ms
+    QUERY:"select c.name, sum(i.price) from carts c,items i,product p where c.id=i.id and 
+          p.sku=i.sku AND P.CATEGORY_NAME='CAT_1' group by c.name union (select u.name,0 
+          from users u where u.name not in (select c.name from carts c)) order by 2 desc"
+      AVG TIME: 588 ms
+    QUERY:"select  sum(i.price) from items i, carts c, product p where c.purchase_date is 
+            not null and i.id=c.id and c.name='CUST_1' and p.sku=i.sku and 
+            p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 496 ms
+    QUERY:"select u.state, sum(i.price) from carts c, users u,items i, product p where
+            u.name=c.name and c.id=i.id and p.sku=i.sku AND P.CATEGORY_NAME='CAT_1' group 
+            by u.state union (select u.state,0 from users u where u.state not in 
+            (select u.state from users u,carts c where u.name = c.name)) order by 2 desc"
+      AVG TIME: 477 ms
+    QUERY:"select sum(i.price) from users u, items i, carts c, product p where 
+            c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='AL' 
+            and p.sku=i.sku and p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 489 ms
+  SMALL DATABASE: 30 USERS 10 CATEGORIES 30 PRODUCT 30 SALES
+    QUERY:"select p.product_name from product p  order by p.product_name"
+      AVG TIME: 417 ms
+    QUERY:"select name from users order by name"
+      AVG TIME: 423 ms
+    QUERY:"select  sum(i.price) from items i, carts c, product p where c.purchase_date is
+              not null and i.id=c.id and c.name='CUST_1' and p.sku=i.sku and 
+              p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 397 ms
+    QUERY:"select state from users group by state order by state"
+      AVG TIME: 410ms
+    QUERY:"select sum(i.price) from users u, items i, carts c, product p where 
+            c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='AL' 
+            and p.sku=i.sku and p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 417 ms
+    QUERY:"select p.sku,sum(i.price) as totalsum from items i,product p where p.sku=i.sku 
+            AND p.category_name='CAT_1' group by p.sku union (select p.sku, 0 as totalsum 
+            from product p where p.sku not in( select i.sku from items i)AND 
+            P.CATEGORY_NAME='CAT_1') order by totalsum desc"
+      AVG TIME: 441ms
+    QUERY:"select p.product_name from product p where p.sku='SKU_1_13'"
+      AVG TIME: 400 ms
+    QUERY:"select c.name, sum(i.price) from carts c,items i,product p where c.id=i.id and 
+          p.sku=i.sku AND P.CATEGORY_NAME='CAT_1' group by c.name union (select u.name,0 
+          from users u where u.name not in (select c.name from carts c)) order by 2 desc"
+      AVG TIME: 422 ms
+    QUERY:"select  sum(i.price) from items i, carts c, product p where c.purchase_date is 
+            not null and i.id=c.id and c.name='CUST_1' and p.sku=i.sku and 
+            p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 423 ms
+    QUERY:"select u.state, sum(i.price) from carts c, users u,items i, product p where
+            u.name=c.name and c.id=i.id and p.sku=i.sku AND P.CATEGORY_NAME='CAT_1' group 
+            by u.state union (select u.state,0 from users u where u.state not in 
+            (select u.state from users u,carts c where u.name = c.name)) order by 2 desc"
+      AVG TIME: 415 ms
+    QUERY:"select sum(i.price) from users u, items i, carts c, product p where 
+            c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='AL' 
+            and p.sku=i.sku and p.product_name='PROD_1' group by i.sku"
+      AVG TIME: 455 ms
+  
+
+INDICIES REPORT:
+  CANDIDATE INDEX: INDEX FOR PRODUCTS ON CATEGORY NAMES 
+    BENEFICIAL: YES
+    REASONING: LESS LOOKUPS ON AVERAGE AND RUN TIMES IMPROVED WHEN EXPERIMENTING
+    EXPERIMENTED?: YES
+    RESULT: AVG RUNTIMES IMPROVED BY ABOUT 100 MS
+  CANDIDATE INDEX: INDEX FOR ITEMS ON CART ID
+    BENEFICIAL: YES
+    REASONING: LESS LOOK UPS ON AVERAGE
+    EXPERIMENTED?: YES
+    RESULT:  AVG RUNTIMES IMPROVED BY ABOUT 80 ms
+  CANDIDATE INDEX: INDEX FRO ITEMS ON SKU
+    BENEFICIAL: NOT REALLY
+    REASONING: TIMES DID NOT IMPROVE AFTER EXPERIMENTING
+    EXPERIMENTED?: YES
+    RESULT: NOT MUCH SIGNIFICANT IMPROVEMENT ON AVERAGE
