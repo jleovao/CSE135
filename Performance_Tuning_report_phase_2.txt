@@ -1,12 +1,14 @@
 CODE:
   CREATE INDEX CAT_IND ON PRODUCT (CATEGORY_NAME)
   CREATE INDEX CART_IND ON ITEMS(ID)CREATE INDEX CART_IND ON ITEMS(ID)
+  CREATE INDEX indexOnCS ON COSINE_SIMILARITY(CS_VALUE);
   
 BEST INDEX CHOICE:
   INDEX FOR PRODUCT ON CATEGORY NAME
   CREATE INDEX CAT_IND ON PRODUCT (CATEGORY_NAME)
 
 RUN TIME AVERAGES:
+
   LARGE DATABASE: 10000 USERS 10 CATEGORIES 1000 PRODUCT 5000 SALES
     QUERY:"select p.product_name from product p  order by p.product_name"
       AVG TIME: 417 ms
@@ -46,6 +48,36 @@ RUN TIME AVERAGES:
             c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='AL' 
             and p.sku=i.sku and p.product_name='PROD_1' group by i.sku"
       AVG TIME: 489 ms
+    QUERY:"SELECT p1.sku AS product_x,p2.sku AS product_y
+           FROM product p1, product p2
+           WHERE p1.sku <> p2.sku 
+           AND p1.sku < p2.sku"
+      AVG TIME: 331 ms
+    QUERY:"SELECT u.name, COALESCE(c.id,-1) as id
+           FROM carts c RIGHT OUTER JOIN users u ON c.name = u.name"
+      AVG TIME: 266 ms
+    QUERY:"SELECT name FROM users"
+      AVG TIME: 271 ms
+    QUERY:"SELECT c.name, i.sku,SUM(i.price) AS total_sale
+           FROM items i,carts c WHERE c.id = i.id
+           GROUP BY c.name, i.sku
+           ORDER BY i.sku ASC"
+      AVG TIME: 361 ms
+    QUERY:"(SELECT i.sku,pt.product_name,SUM(i.price) AS total_sale
+            FROM items i, product pt
+            WHERE i.sku = pt.sku
+            GROUP BY i.sku,pt.product_name)
+            UNION
+            (SELECT p.sku,p.product_name,0 AS total_sale
+            FROM product p
+            WHERE p.sku NOT IN(
+                SELECT x.sku
+                FROM items x)
+            )"
+      AVG TIME: 287 ms
+    QUERY:"select product_x, product_y,cs_value from cosine_similarity order by cs_value desc limit 100"
+      AVG TIME: 277 ms   
+  
   SMALL DATABASE: 30 USERS 10 CATEGORIES 30 PRODUCT 30 SALES
     QUERY:"select p.product_name from product p  order by p.product_name"
       AVG TIME: 417 ms
@@ -85,7 +117,35 @@ RUN TIME AVERAGES:
             c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='AL' 
             and p.sku=i.sku and p.product_name='PROD_1' group by i.sku"
       AVG TIME: 455 ms
-  
+    QUERY:"SELECT p1.sku AS product_x,p2.sku AS product_y
+           FROM product p1, product p2
+           WHERE p1.sku <> p2.sku 
+           AND p1.sku < p2.sku"
+      AVG TIME: 192 ms
+    QUERY:"SELECT u.name, COALESCE(c.id,-1) as id
+           FROM carts c RIGHT OUTER JOIN users u ON c.name = u.name"
+      AVG TIME: 150 ms
+    QUERY:"SELECT name FROM users"
+      AVG TIME: 161 ms
+    QUERY:"SELECT c.name, i.sku,SUM(i.price) AS total_sale
+           FROM items i,carts c WHERE c.id = i.id
+           GROUP BY c.name, i.sku
+           ORDER BY i.sku ASC"
+      AVG TIME: 161 ms
+    QUERY:"(SELECT i.sku,pt.product_name,SUM(i.price) AS total_sale
+            FROM items i, product pt
+            WHERE i.sku = pt.sku
+            GROUP BY i.sku,pt.product_name)
+            UNION
+            (SELECT p.sku,p.product_name,0 AS total_sale
+            FROM product p
+            WHERE p.sku NOT IN(
+                SELECT x.sku
+                FROM items x)
+            )"
+      AVG TIME: 188 ms
+    QUERY:"select product_x, product_y,cs_value from cosine_similarity order by cs_value desc limit 100"
+      AVG TIME: 179 ms
 
 INDICIES REPORT:
   CANDIDATE INDEX: INDEX FOR PRODUCTS ON CATEGORY NAMES 

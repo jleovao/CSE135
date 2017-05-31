@@ -42,9 +42,11 @@
           if(role.equals("owner")){
             out.println("<li><a href=\"/CSE135/categories\">Categories Page(owners)</a></li>"+
                         "<li><a href=\"/CSE135/products\">Products Page(owners)</a></li>"+
-                        "<li><a href=\"/CSE135/analytics\">Sales Analytics</a></li>");
+                        "<li><a href=\"/CSE135/similar_products\">Similar Products(owners)</a></li>"+
+                        "<li><a href=\"/CSE135/analytics\">Sales Analytics(owners)</a></li>");
           }
           %>
+          <li><a href="/CSE135/similar_products">Similar Products Page</a></li>
           <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
           <li><a href="/CSE135/order">Product Order Page</a></li>
           <li><a href="/CSE135/buy">Buy Shopping Cart</a></li>

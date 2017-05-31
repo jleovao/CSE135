@@ -136,10 +136,11 @@
           	 %>
           	 <li><a href="./categories.jsp">Categories Page</a></li>
           	 <li><a href="./products.jsp">Products Page</a></li>
-          	 <li><a href="./browsing.jsp">Product Browsing</a></li>
+          	 <li><a href="./analytics.jsp">Analytics</a></li>
           	 <%
           	 }
           	 %>	
+          	  <li><a href="./similar_products.jsp">Similar Products</a></li>
           	 <li><a href="./order.jsp">Product Order</a></li>
           	 <li><a href="./buy.jsp">Shopping Cart</a></li>
           </ul>
@@ -151,6 +152,7 @@
 	        <th>SKU</th>
 	        <th>Category</th>
 	        <th>Price</th>
+	        <th>Action</th>
 	      </tr>
           <%
           Statement product_stmnt = conn.createStatement();

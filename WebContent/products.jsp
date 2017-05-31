@@ -224,6 +224,8 @@
           	 <li><a href="./categories.jsp">Categories</a></li>
           	 <li><a href="./products.jsp">Products</a></li>
           	 <li><a href="./browsing.jsp">Product Browsing</a></li>
+          	 <li><a href="./similar_products.jsp">Similar Products</a></li>
+          	 <li><a href="./analytics.jsp">Analytics</a></li>
           	 <li><a href="./order.jsp">Product Order</a></li>
           	 <li><a href="./cart.jsp">Shopping Cart</a></li>
           </ul>

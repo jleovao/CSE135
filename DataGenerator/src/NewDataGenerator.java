@@ -21,6 +21,7 @@ public class NewDataGenerator {
                 "WA","WI","WV","WY"};
   
   private static String DROP_TABLES = "DROP TABLE items, carts, product, categories, users ";
+  
   private static String CREATE_USER = "CREATE TABLE USERS ( NAME TEXT PRIMARY KEY, "
     +"AGE INTEGER NOT NULL, "
     +"ROLE TEXT NOT NULL,"
@@ -326,7 +327,7 @@ public class NewDataGenerator {
       String port = "5432";
       
       //System.out.println("Provide the DB Name : ");
-      String sid = "shopapp";
+      String sid = "Shopping_Application";
       
       //System.out.println("Provide the Username : ");
       String username = "postgres";

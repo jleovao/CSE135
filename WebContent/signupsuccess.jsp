@@ -7,7 +7,7 @@
 <title>Signup Success</title>
 </head>
 <body>
-  <h3>Signup Successfull</h3>
+  <h3>Signup Successful</h3>
   <a href="/CSE135/login">Login</a>
 </body>
 </html>
