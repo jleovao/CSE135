@@ -209,24 +209,12 @@
           <input type="hidden" name="action" value="start">
           <td>Rows Column:
             <select name="customerstate">
-              <% if (rows.equals("")||rows.equals("customer")){ %>
-                <option value="customer">Customer</option>
-              <%} %>
               <option value="state">State</option>
-              <% if (rows.equals("state")){ %>
-                <option value="customer">Customer</option>
-              <%} %>
             </select>
           </td>
           <td>Order By:
             <select name="orderby">
-              <% if (order.equals("")||order.equals("alphabetical")){ %>
-                <option value="alphabetical">Alphabetical</option>
-              <%} %>
               <option value="top-k">Top-K</option>
-              <% if (order.equals("top-k")){ %>
-                <option value="alphabetical">Alphabetical</option>
-              <%} %>
             </select>
           </td>
           <td>
