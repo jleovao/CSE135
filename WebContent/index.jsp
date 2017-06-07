@@ -50,6 +50,7 @@
           <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
           <li><a href="/CSE135/order">Product Order Page</a></li>
           <li><a href="/CSE135/buy">Buy Shopping Cart</a></li>
+          <li><a href="/CSE135/buyOrders.jsp">Buy Order</a></li>
 
         </ul>
       </div>
