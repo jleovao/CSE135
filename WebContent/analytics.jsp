@@ -210,7 +210,9 @@
           if (!filterquery.equals("")){
             filterquery = "and p.category_name='"+filter+"'";
           }
-          rs1=stmt.executeQuery("with overall_table as("
+          stmt3.executeUpdate("drop view precomputed;");
+          stmt2.executeUpdate("create view precomputed as ( "
+              +"with overall_table as("
               +"  select i.sku,u.state,sum(i.price) as amount  "
               +"  from items i"
               +"  inner join carts c on (c.id = i.id and c.purchase_date is not null)"
@@ -240,13 +242,14 @@
               +"top_n_prod as ("
               +"  select row_number() over(order by dollar desc) as product_order, sku, dollar from top_prod"
               +")"
-              +"select ts.state, s.state, tp.sku, p.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dollar as state_sum, tp.dollar as product_sum"
+              +"select s.state, p.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dollar as state_sum, tp.dollar as product_sum"
               +"  from top_n_prod tp CROSS JOIN top_n_state ts "
               +"  LEFT OUTER JOIN overall_table ot "
               +"  ON ( tp.sku = ot.sku and ts.state = ot.state)"
               +"  inner join state s ON ts.state = s.state"
               +"  inner join product p ON (tp.sku = p.sku "+filterquery+") "
-              +"  order by ts.state_order, tp.product_order");
+              +"  order by ts.state_order, tp.product_order);");
+          rs1= stmt.executeQuery("select * from precomputed;");
           rs2=rs1;
           %>
           
