@@ -1,3 +1,5 @@
+drop view precomputed; 
+create view precomputed as(
 with overall_table as(
   select i.sku,u.state,sum(i.price) as amount  
   from items i
@@ -28,10 +30,12 @@ top_prod as(
 top_n_prod as (
   select row_number() over(order by dollar desc) as product_order, sku, dollar from top_prod
 )
-select ts.state, s.state, tp.sku, pr.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dollar as state_sum, tp.dollar as product_sum
+select  s.state, pr.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dollar as state_sum, tp.dollar as product_sum
   from top_n_prod tp CROSS JOIN top_n_state ts 
   LEFT OUTER JOIN overall_table ot 
   ON ( tp.sku = ot.sku and ts.state = ot.state)
   inner join state s ON ts.state = s.state
   inner join product pr ON tp.sku = pr.sku
   order by ts.state_order, tp.product_order
+);
+select * from precomputed
