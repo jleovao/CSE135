@@ -240,12 +240,12 @@
               +"top_n_prod as ("
               +"  select row_number() over(order by dollar desc) as product_order, sku, dollar from top_prod"
               +")"
-              +"select ts.state, s.state, tp.sku, pr.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dollar as state_sum, tp.dollar as product_sum"
+              +"select ts.state, s.state, tp.sku, p.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dollar as state_sum, tp.dollar as product_sum"
               +"  from top_n_prod tp CROSS JOIN top_n_state ts "
               +"  LEFT OUTER JOIN overall_table ot "
               +"  ON ( tp.sku = ot.sku and ts.state = ot.state)"
               +"  inner join state s ON ts.state = s.state"
-              +"  inner join product pr ON tp.sku = pr.sku"
+              +"  inner join product p ON (tp.sku = p.sku "+filterquery+") "
               +"  order by ts.state_order, tp.product_order");
           rs2=rs1;
           %>
@@ -258,17 +258,22 @@
               <%
               }
               ind=0;
-              String[] prodarray=new String[collimit];
-              while(ind<50){
-                rs1.next();
-                currentState=rs1.getString("state");
+              String past="";
+              String present="";
+              while(rs1.next()){
+                present=rs1.getString("state");
                 String product_name = rs1.getString("product_name");
                 Double product_sum=rs1.getDouble("product_sum");
+                if (ind != 0 && !past.equals(present)){
+                  break;
+                }
                 %>
                 <td><%=ind+1 %><br><%=product_name%><br><%=product_sum %>
                 </td>
                 <%
+                  
                 ind++;
+                past=present;
               }
               %>
             </tr>
@@ -282,20 +287,27 @@
                 <tr>
                   <%
                     statename = rs2.getString("state");
+                    currentState=statename;
                     double statesum= rs2.getDouble("state_sum");
                     %>
                     <td><%=index %> <br><%=statename %><br><%=statesum %></td>
                     <%             
                     
-                    for(int i=0;i<50;i++){
+                    while(statename.equals(currentState)){
                       double amount = rs2.getDouble("cell_sum");
                       %>
                       <td><%=amount %></td>
                       <%
-                      if(i!=49){
-                        rs2.next();
+                      if(rs2.next()){
+                        statename=rs2.getString("state");
+                      }else{
+                        break;
+                      }
+                      if(!statename.equals(currentState)){
+                        rs2.previous();
                       }
                     }
+                    
                   %>
                 </tr>
                 <%
