@@ -39,3 +39,19 @@ select  s.state, pr.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dolla
   order by ts.state_order, tp.product_order
 );
 select * from precomputed
+
+
+
+
+
+
+
+
+
+
+create table log(
+    id serial primary key,
+    cart_id int not null,
+    product_name text not null,
+    price decimal(9,2)
+);

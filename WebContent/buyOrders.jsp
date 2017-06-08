@@ -33,22 +33,24 @@
           String INSERT_SHOPPING_CART = "INSERT INTO carts(name, total_price, purchase_date) VALUES( ?, ?,? ) ";
           String INSERT_PRODUCTS_IN_CART = "INSERT INTO items(id, sku,qty, price) VALUES(?, ?, ?, ?)";
           String GET_RANDOM_PERSON = "SELECT id,name FROM users OFFSET floor(random()* (select count(*) from users)) LIMIT 1";
-          String GET_RANDOM_5_PRODUCTS = "SELECT product_id,sku, price FROM product OFFSET floor(random()* (select count(*) from product)) LIMIT 5";
+          String GET_RANDOM_5_PRODUCTS = "SELECT product_id,sku, price, product_name FROM product OFFSET floor(random()* (select count(*) from product)) LIMIT 5";
           Random rand = new Random();
           int noOfSales = Integer.parseInt(request.getParameter("totalOrder"));
           int batchSize = 10000;
           int personId = 0;
           String personName=null;
           String productSKU=null;
+          String productName=null;
           int noOfRows = 0;
           int productId = 0;
           int productPrice = 0;
           int quantity = 0;     
-          PreparedStatement shoppingCartPtst = null, productsCartPtst  = null;
+          PreparedStatement shoppingCartPtst = null, productsCartPtst  = null, logPtst=null;
           Statement personSt = null, productSt = null;
           ArrayList<Integer> cartIds = new ArrayList<Integer>();
           try {
             shoppingCartPtst = con.prepareStatement(INSERT_SHOPPING_CART, Statement.RETURN_GENERATED_KEYS);
+            logPtst = con.prepareStatement("INSERT into log(cart_id,product_name,price) VALUES (?,?,?) ");
             productsCartPtst = con.prepareStatement(INSERT_PRODUCTS_IN_CART);
             personSt = con.createStatement();
             productSt = con.createStatement();
@@ -95,22 +97,30 @@
               ResultSet productRs = productSt.executeQuery(GET_RANDOM_5_PRODUCTS);
               while(productRs.next()) {
                 productsCartPtst.setInt(1, cartIds.get(i));
+                logPtst.setInt(1, cartIds.get(i));
                 productSKU = productRs.getString("sku");
+                productName=productRs.getString("product_name");
                 productsCartPtst.setString(2, productSKU);
+                logPtst.setString(2, productName);
                 
                 quantity = rand.nextInt(10)+1;
                 productsCartPtst.setInt(3, quantity);
                 productPrice = productRs.getInt("price");
                 productPrice=productPrice*quantity;
                 productsCartPtst.setInt(4, productPrice);
+                logPtst.setInt(3, productPrice);
                 
                 productsCartPtst.addBatch();
+                logPtst.addBatch();
                 totalRows++;
                 
                 if(totalRows % batchSize == 0) {
+                  logPtst.executeBatch();
                   productsCartPtst.executeBatch();
+                  
                 }
               }
+              logPtst.executeBatch();
               productsCartPtst.executeBatch();
             }
             con.commit();

@@ -210,7 +210,8 @@
           if (!filterquery.equals("")){
             filterquery = "and p.category_name='"+filter+"'";
           }
-          stmt3.executeUpdate("drop view precomputed;");
+          stmt4.executeUpdate("delete from log");
+          stmt3.executeUpdate("drop view if exists precomputed;");
           stmt2.executeUpdate("create view precomputed as ( "
               +"with overall_table as("
               +"  select i.sku,u.state,sum(i.price) as amount  "
