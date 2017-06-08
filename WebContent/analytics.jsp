@@ -76,6 +76,8 @@
     String action=null;
     String filter;
     String filterquery;
+    String currentState=null;
+    String statename = null;
     int ind=0;
     int countrow;
     int countcol;
@@ -135,7 +137,7 @@
         <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
         <li><a href="/CSE135/order">Product Order Page</a></li>
         <li><a href="/CSE135/buy">Buy Shopping Cart</a></li>
-        <li><a href="/CSE135/buyOreders.jsp">Buy Orders</a></li>
+        <li><a href="/CSE135/buyOrders.jsp">Buy Orders</a></li>
       </ul>
     </div>
     <!-- choose row and column -->
@@ -146,7 +148,7 @@
           "jdbc:postgresql://localhost/Shopping_Application?" +
           "user=postgres&password=7124804");
       
-      stmt = conn.createStatement();
+      stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
       stmt2 = conn.createStatement();
       stmt3 = conn.createStatement();
       stmt4 = conn.createStatement();
@@ -192,6 +194,7 @@
                   <option value="All">All</option>
                   <%
                 }
+              rs1.close();
               %>
               </select>
               <input type="submit" value="Filter">
@@ -207,69 +210,97 @@
           if (!filterquery.equals("")){
             filterquery = "and p.category_name='"+filter+"'";
           }
-          rs1=stmt.executeQuery("select p.sku,sum(i.price) as totalsum from items i,product p where p.sku=i.sku "+filterquery+" group by p.sku union (select p.sku, 0 as totalsum from product p where p.sku not in( select i.sku from items i) "+filterquery+") order by totalsum desc ");
+          rs1=stmt.executeQuery("with overall_table as("
+              +"  select i.sku,u.state,sum(i.price) as amount  "
+              +"  from items i"
+              +"  inner join carts c on (c.id = i.id and c.purchase_date is not null)"
+              +"  inner join product p on (i.sku = p.sku "+filterquery+")"
+              +"  inner join users u on (c.name = u.name)"
+              +"  group by i.sku,u.state"
+              +"),"
+              +"top_state as("
+              +"  select state, sum(amount) as dollar from ("
+              +"  select state, amount from overall_table"
+              +"  UNION ALL"
+              +"  select state as state, 0.0 as amount from state"
+              +"  ) as state_union"
+              +"  group by state order by dollar desc"
+              +"),"
+              +"top_n_state as("
+              +"  select row_number() over(order by dollar desc) as state_order, state, dollar from top_state"
+              +"),"
+              +"top_prod as("
+              +"  select sku, sum(amount) as dollar from ("
+              +"  select sku, amount from overall_table"
+              +"  UNION ALL"
+              +"  select sku as sku, 0.0 as amount from product"
+              +"  ) as product_union"
+              +"  group by sku order by dollar desc limit 50"
+              +"),"
+              +"top_n_prod as ("
+              +"  select row_number() over(order by dollar desc) as product_order, sku, dollar from top_prod"
+              +")"
+              +"select ts.state, s.state, tp.sku, pr.product_name, COALESCE(ot.amount, 0.0) as cell_sum, ts.dollar as state_sum, tp.dollar as product_sum"
+              +"  from top_n_prod tp CROSS JOIN top_n_state ts "
+              +"  LEFT OUTER JOIN overall_table ot "
+              +"  ON ( tp.sku = ot.sku and ts.state = ot.state)"
+              +"  inner join state s ON ts.state = s.state"
+              +"  inner join product pr ON tp.sku = pr.sku"
+              +"  order by ts.state_order, tp.product_order");
+          rs2=rs1;
           %>
           
           <table border="1">
             <tr>
-              <%if(rows.equals("customer")){ %>
-              <td><b>Customer Name</b></td>
-              <%}
+              <%
               if(rows.equals("state")){%>
               <td><b>State</b></td>
               <%
               }
               ind=0;
               String[] prodarray=new String[collimit];
-              while(rs1.next()){
-                String skuorder = rs1.getString("sku");
-                rs2=stmt2.executeQuery("select p.product_name from product p where p.sku='"+skuorder+"'" );
-                if(rs2.next()){
-                  System.out.println(ind+" "+rs2.getString("product_name"));
-                  prodarray[ind]=rs2.getString("product_name");
-                }
+              while(ind<50){
+                rs1.next();
+                currentState=rs1.getString("state");
+                String product_name = rs1.getString("product_name");
+                Double product_sum=rs1.getDouble("product_sum");
                 %>
-                <td><%=prodarray[ind] %></td>
+                <td><%=ind+1 %><br><%=product_name%><br><%=product_sum %>
+                </td>
                 <%
                 ind++;
-                }
+              }
               %>
             </tr>
             <%
             
             if(rows.equals("state")){
-              rs4=stmt4.executeQuery("select u.state, sum(i.price) from carts c, users u,items i, product p where u.name=c.name and c.id=i.id and p.sku=i.sku "+filterquery+" group by u.state union (select u.state,0 from users u where u.state not in (select u.state from users u,carts c where u.name = c.name)) order by 2 desc");
-              while(rs4.next()){
+              int index = 1;
+              rs2.beforeFirst();
+              while(rs2.next()){
                 %>
                 <tr>
                   <%
-                    String statename = rs4.getString("state");
+                    statename = rs2.getString("state");
+                    double statesum= rs2.getDouble("state_sum");
                     %>
-                    <td><%=statename %></td>
+                    <td><%=index %> <br><%=statename %><br><%=statesum %></td>
                     <%             
-                    for(int i=0;i<prodarray.length;i++){
-                      rs5=stmt5.executeQuery("select sum(i.price) from users u, items i, carts c, product p where c.purchase_date is not null and i.id=c.id and c.name=u.name and u.state='"+statename+"' and p.sku=i.sku and p.product_name='"+prodarray[i]+"' group by i.sku");
-                      double quant = 0;
-                      double price = 0;
-                      double total = 0;
-                      if(prodarray[i]!=null){
-                        while(rs5.next()){
-                          price=rs5.getDouble(1);
-                          total=total +(price);
-                        }
-                        %>
-                        <td><%=total %></td>
-                        <%
+                    
+                    for(int i=0;i<50;i++){
+                      double amount = rs2.getDouble("cell_sum");
+                      %>
+                      <td><%=amount %></td>
+                      <%
+                      if(i!=49){
+                        rs2.next();
                       }
                     }
                   %>
                 </tr>
                 <%
-              }
-              rs1=stmt.executeQuery("select u.state, sum(i.price) from carts c, users u,items i, product p where u.name=c.name and c.id=i.id and p.sku=i.sku "+filterquery+" group by u.state union (select u.state,0 from users u where u.state not in (select u.state from users u,carts c where u.name = c.name)) order by 2 desc ");
-              if(rs1.next()){
-                showrowbut= true;
-              }
+                index++;
+              }//end while
             }
             %>
           </table>          
