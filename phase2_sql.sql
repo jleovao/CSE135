@@ -35,5 +35,3 @@ select ts.state, s.state, tp.sku, pr.product_name, COALESCE(ot.amount, 0.0) as c
   inner join state s ON ts.state = s.state
   inner join product pr ON tp.sku = pr.sku
   order by ts.state_order, tp.product_order
-
-
