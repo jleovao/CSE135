@@ -15,7 +15,7 @@
         text-align: center;
       }
       div.nav {
-        float: left;
+        float: top;
         max-width: 120px;
         margin: 0;
         padding: 1em;
@@ -24,7 +24,32 @@
         margin-left: 140px;
         padding: 1em;
         overflow: hidden;
-      }        
+      }
+      #grid {
+    	width: 3820px;
+    	height: 3190px;        
+	  }
+	  .cell {
+	    outline: 5px solid lime;
+    	float: left;
+    	height: 20px;
+   	 	width: 60px;    
+	  }
+	  .wide_cell {
+    	float: left;
+    	height: 20px;
+   	 	width: 3700px;    
+	  }
+	  .high_cell {
+    	float: left;
+    	height: 3150px;
+   	 	width: 60px;    
+	  }
+	  .supercell {
+    	float: left;
+    	height: 3150px;
+   	 	width: 3700px;    
+	  }      
     </style>
   </head>
 
@@ -134,6 +159,7 @@
                     "<li><a href=\"/CSE135/analytics\">Sales Analytics</a></li>");
         }
         %>
+        <li><a href="/CSE135/analytics">Sales Analytics</a></li>
         <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
         <li><a href="/CSE135/order">Product Order Page</a></li>
         <li><a href="/CSE135/buy">Buy Shopping Cart</a></li>
@@ -202,8 +228,28 @@
           </td>
         </tr>
       </table>
-      <!-- 2-d chart that displays report -->
       
+      <div id ="grid">
+
+      <div class="cell">
+        <form action="/CSE135/analytics" method="post">
+          <input type="hidden" name="action" value="refresh_table">
+          <input type="submit" value="Refresh">
+        </form>
+      </div>
+      
+      <div class="wide_cell"></div>
+      
+      <div class="cell">
+      	<form action="/CSE135/analytics" method="post">
+          <input type="hidden" name="action" value="refresh_table">
+          <input type="submit" value="Refresh">
+        </form>
+      </div>
+      <div class="high_cell"></div>
+      
+      <div class="supercell">
+      <!-- 2-d chart that displays report -->
       <%
       if ((!rows.equals("") && !order.equals(""))){  
         if(order.equals("top-k")){
@@ -325,6 +371,25 @@
       }
       %>
       </table>
+	  <!-- End of div for precomputed 2d table -->
+      </div>
+      <div class="high_cell"></div>
+      <div class="cell">
+      	<form action="/CSE135/analytics" method="post">
+          <input type="hidden" name="action" value="refresh_table">
+          <input type="submit" value="Refresh">
+        </form>
+      </div>
+      <div class="wide_cell"></div>
+      <div class="cell">
+      	<form action="/CSE135/analytics" method="post">
+          <input type="hidden" name="action" value="refresh_table">
+          <input type="submit" value="Refresh">
+        </form>
+      </div>
+
+	  <!-- End of div: grid -->
+      </div>
       
       <%
     }catch(Exception e){      

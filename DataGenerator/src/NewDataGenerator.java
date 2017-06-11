@@ -20,6 +20,7 @@ public class NewDataGenerator {
                 "NM","NV","NY","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VA","VI","VT",
                 "WA","WI","WV","WY"};
   
+  private static String DROP_VIEW = "drop view if exists precomputed;";
   private static String DROP_TABLES = "DROP TABLE items, carts, product, categories, users ";
   
   private static String CREATE_USER = "CREATE TABLE USERS ( NAME TEXT PRIMARY KEY, "
@@ -96,6 +97,7 @@ public class NewDataGenerator {
     Statement stmt = null;
     try {
       stmt = con.createStatement();
+      stmt.executeUpdate(DROP_VIEW);
       stmt.executeUpdate(DROP_TABLES);
       stmt.executeUpdate(CREATE_USER);
       stmt.executeUpdate(CREATE_CATEGORIES);

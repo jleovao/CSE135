@@ -46,6 +46,7 @@
                         "<li><a href=\"/CSE135/analytics\">Sales Analytics(owners)</a></li>");
           }
           %>
+          <li><a href="/CSE135/analytics">Sales Analytics (owners)</a></li>
           <li><a href="/CSE135/similar_products">Similar Products Page</a></li>
           <li><a href="/CSE135/browsing">Product Browsing Page</a></li>
           <li><a href="/CSE135/order">Product Order Page</a></li>
