@@ -16,10 +16,12 @@
       }
       div.nav {
         float: top;
-        max-width: 120px;
         margin: 0;
         padding: 1em;
       }
+      ul#nav_list li{
+    	display:inline;
+	  }
       div.tables {
         margin-left: 140px;
         padding: 1em;
@@ -150,7 +152,7 @@
       %>
     </div>
     <div class="nav">
-      <ul>
+      <ul id="nav_list">
         <%
         if(role.equals("owner")){
           out.println("<li><a href=\"/CSE135/categories\">Categories Page(owners)</a></li>"+
@@ -346,7 +348,7 @@
                     while(statename.equals(currentState)){
                       double amount = rs2.getDouble("cell_sum");
                       %>
-                      <td><%=amount %></td>
+                      <td><%=amount%></td>
                       <%
                       if(rs2.next()){
                         statename=rs2.getString("state");

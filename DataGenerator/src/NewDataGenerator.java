@@ -23,7 +23,7 @@ public class NewDataGenerator {
   private static String DROP_VIEW = "drop view if exists precomputed;";
   private static String DROP_TABLES = "DROP TABLE items, carts, product, categories, users ";
   
-  private static String CREATE_USER = "CREATE TABLE USERS ( NAME TEXT PRIMARY KEY, "
+  private static String CREATE_USER = "CREATE TABLE USERS ( ID SERIAL PRIMARY KEY, NAME TEXT UNIQUE NOT NULL, "
     +"AGE INTEGER NOT NULL, "
     +"ROLE TEXT NOT NULL,"
     +"STATE TEXT NOT NULL);";
