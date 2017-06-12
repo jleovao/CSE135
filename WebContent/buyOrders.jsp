@@ -6,6 +6,16 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Shopping Application</title>
+<style>
+	div.nav {
+        float: top;
+        margin: 0;
+        padding: 1em;
+      }
+      ul#nav_list li{
+    	display:inline;
+	  }
+</style>
 </head>
 <body>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -174,13 +184,26 @@
       request.setAttribute("error", false);
     }
     %>
+    
     <table cellspacing="5">
       <tr>
         <td valign="top"> </td>
         <td></td>
         <td>
-          <h3>Hello <%= session.getAttribute("personName") %></h3>
-        <h3>Buy N Orders</h3>
+          <h1 align="center">Buy N Orders Page</h1>
+          <h3 align="center">Hello <%= session.getAttribute("name") %></h3>
+          
+          <div class="nav" align="center">
+      		<ul id="nav_list">
+        		<li><a href="/CSE135/analytics">Sales Analytics</a></li>
+        		<li><a href="/CSE135/browsing">Product Browsing Page</a></li>
+        		<li><a href="/CSE135/order">Product Order Page</a></li>
+        		<li><a href="/CSE135/buy">Buy Shopping Cart</a></li>
+        		<li><a href="/CSE135/buyOrders.jsp">Buy Orders</a></li>
+      		</ul>
+    	</div>
+          
+        
         <p> Provide number of orders to be inserted. It will insert 'N' carts and '5' products for each cart, of random quantity between 1 and 10. Customers and Products are picked up randomly from the table </p> 
         <form method="GET" action="buyOrders.jsp" id="buyOrders">
           Enter number of Orders : <input type="text" name="totalOrder" required=true/>

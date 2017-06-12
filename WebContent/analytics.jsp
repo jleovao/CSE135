@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    import="java.util.ArrayList" pageEncoding="ISO-8859-1"%>
+    import="java.util.*" pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
   <head>
@@ -51,8 +51,31 @@
     	float: left;
     	height: 3150px;
    	 	width: 3700px;    
-	  }      
+	  }  
+	  .red {
+	  	color:red;
+	  }    
+	  .purple {
+	  	color:purple;
+	  }
+	  
+	  
     </style>
+    <script type="text/javascript">
+    	function refreshPage () {
+        	var page_y = document.getElementsByTagName("body")[0].scrollTop;
+        	var page_x = document.getElementsByTagName("body")[0].scrollLeft;
+        	window.location.href = window.location.href.split('?')[0] + '?page_y=' + page_y + '?page_x=' + page_x;
+    	}
+    	window.onload = function () {
+        	
+        	if ( window.location.href.indexOf('page_y') != -1 && window.location.href.indexOf('page_x') != -1) {
+        	    var match = window.location.href.split('?')[1].split("&")[0].split("=");
+        	    document.getElementsByTagName("body")[0].scrollTop = match[1];
+        	}
+    	}
+    	
+    </script>
   </head>
 
   <body> 
@@ -92,11 +115,24 @@
     Statement stmt3=null;
     Statement stmt4=null;
     Statement stmt5=null;
+    
+    Statement update_cell_stmnt=null;
+    Statement update_state_stmnt=null;
+    Statement update_prod_stmnt=null;
+    Statement top_stmnt = null;
+    Statement logstmt = null;
+    Statement new_stmt = null;
+    
     ResultSet rs1=null;
     ResultSet rs2=null;
     ResultSet rs3=null;
     ResultSet rs4=null;
     ResultSet rs5=null;
+    
+    ResultSet rs_log = null;
+    ResultSet rs_top_fiddy=null;
+    ResultSet rs_new_top_fiddy=null;
+    
     ArrayList<String> catlist = new ArrayList<String>();
     String rows;
     String order;
@@ -182,6 +218,12 @@
       stmt4 = conn.createStatement();
       stmt5 = conn.createStatement();
       
+      update_cell_stmnt = conn.createStatement();
+      update_state_stmnt = conn.createStatement();
+      update_prod_stmnt = conn.createStatement();
+      top_stmnt = conn.createStatement();
+      logstmt = conn.createStatement();
+      new_stmt = conn.createStatement();
       %>      
       <!-- category filter -->
       <table>
@@ -234,10 +276,11 @@
       <div id ="grid">
 
       <div class="cell">
-        <form action="/CSE135/analytics" method="post">
+         <form action="/CSE135/analytics" method="post">
           <input type="hidden" name="action" value="refresh_table">
-          <input type="submit" value="Refresh">
+          <input type="submit" value="Refresh" onClick="refreshTable();">
         </form>
+       <!--  <button onClick="refreshTable();" value="show">Refresh</button>-->
       </div>
       
       <div class="wide_cell"></div>
@@ -245,8 +288,9 @@
       <div class="cell">
       	<form action="/CSE135/analytics" method="post">
           <input type="hidden" name="action" value="refresh_table">
-          <input type="submit" value="Refresh">
+          <input type="submit" value="Refresh" onClick="refreshTable();">
         </form>
+        <!-- <button onClick="refreshTable();" value="show">Refresh</button> -->
       </div>
       <div class="high_cell"></div>
       
@@ -258,9 +302,61 @@
           if (!filterquery.equals("")){
             filterquery = "and p.category_name='"+filter+"'";
           }
+          
+          rs_top_fiddy = top_stmnt.executeQuery("select product_name from (select product_name,sum(product_sum) as biscuit from precomputed " +
+        		  "group by product_name order by biscuit desc limit 50) as foo");
+          ArrayList<String> top_fiddy = new ArrayList<String>();
+          while(rs_top_fiddy.next()) {
+        	  top_fiddy.add(rs_top_fiddy.getString("product_name"));
+          }
+          for(String num : top_fiddy) {
+        	  //out.println(num + ",");
+          }
+          
+          
+          // Result set to get log data
+          rs_log = logstmt.executeQuery(
+        		  "select u.state,l.product_name " +
+        		  "from log l,carts c,users u " +
+        		  "where u.name = c.name and c.id = l.cart_id");
+          
+          // Save log data into hashmap
+          HashMap<String, String> log_data = new HashMap<String, String>(); 
+                while(rs_log.next()) {
+          	     	log_data.put(rs_log.getString("state"),rs_log.getString("product_name"));
+                } 
+          
+          // Optimize performance by updating precomputed table
+          update_cell_stmnt.executeUpdate(
+          "update precomputed " +
+          "set cell_sum = cell_sum + x.price " +
+          "from (select u.state,l.product_name,l.price " +
+          "from log l,carts c,users u " +
+          "where u.name = c.name and c.id = l.cart_id) as x " + 
+          "where x.product_name = precomputed.product_name and " +
+          "x.state = precomputed.state;");
+           
+          update_state_stmnt.executeUpdate(
+          "update precomputed " +
+          "set state_sum = state_sum + x.total_price " +
+          "from (select u.state,sum(l.price) as total_price " +
+          "from log l,carts c,users u " +
+          "where u.name = c.name and c.id = l.cart_id " +
+          "group by u.state) as x " +
+          "where x.state = precomputed.state;");
+		  
+          update_prod_stmnt.executeUpdate(
+          "update precomputed " +
+          "set product_sum = product_sum + x.total_price " +
+          "from (select l.product_name ,sum(l.price) as total_price " +
+          "from log l,carts c,users u " +
+          "where u.name = c.name and c.id = l.cart_id " +
+          "group by l.product_name) as x " +
+          "where x.product_name = precomputed.product_name;"); 
+          
           stmt4.executeUpdate("delete from log");
-          stmt3.executeUpdate("drop view if exists precomputed;");
-          stmt2.executeUpdate("create view precomputed as ( "
+          stmt3.executeUpdate("drop table if exists precomputed;");
+          stmt2.executeUpdate("create table precomputed as ( "
               +"with overall_table as("
               +"  select i.sku,u.state,sum(i.price) as amount  "
               +"  from items i"
@@ -299,7 +395,9 @@
               +"  inner join product p ON (tp.sku = p.sku "+filterquery+") "
               +"  order by ts.state_order, tp.product_order);");
           rs1= stmt.executeQuery("select * from precomputed;");
+          
           rs2=rs1;
+          
           %>
           
           <table border="1">
@@ -319,11 +417,18 @@
                 if (ind != 0 && !past.equals(present)){
                   break;
                 }
+                // If new product is among the top fifty
+                if(!top_fiddy.contains(product_name)) {
+                out.println(product_name + " is now among the top selling products! ");
                 %>
-                <td><%=ind+1 %><br><%=product_name%><br><%=product_sum %>
-                </td>
+                <td bgcolor="#551A8B"><%=ind+1 %><br><%=product_name%><br><%=product_sum %></td>
                 <%
-                  
+                }
+                else {
+                %>	
+                <td><%=ind+1 %><br><%=product_name%><br><%=product_sum %></td>
+                <%	
+                }
                 ind++;
                 past=present;
               }
@@ -340,6 +445,8 @@
                   <%
                     statename = rs2.getString("state");
                     currentState=statename;
+                    //out.println("State = " + currentState);
+                    
                     double statesum= rs2.getDouble("state_sum");
                     %>
                     <td><%=index %> <br><%=statename %><br><%=statesum %></td>
@@ -347,9 +454,25 @@
                     
                     while(statename.equals(currentState)){
                       double amount = rs2.getDouble("cell_sum");
+                      
+                      //out.println("State = " + rs2.getString("product_name") + ",");
+                      if(log_data.isEmpty()) {
                       %>
-                      <td><%=amount%></td>
-                      <%
+                        <td><%=amount%></td>
+                      <%  
+                      } else {
+                      	if(log_data.containsKey(currentState) && log_data.get(currentState).equals(rs2.getString("product_name"))) {
+                        %>
+                          <td bgcolor="#FF0000"><%=amount%></td>
+                        <%
+                        // else cell was not updated since last refresh
+                      	} else {
+                        %>
+                          <td><%=amount%></td>
+                        <%
+                      	}
+                      } // end else
+                      
                       if(rs2.next()){
                         statename=rs2.getString("state");
                       }else{
@@ -377,17 +500,19 @@
       </div>
       <div class="high_cell"></div>
       <div class="cell">
-      	<form action="/CSE135/analytics" method="post">
+      	 <form action="/CSE135/analytics" method="post">
           <input type="hidden" name="action" value="refresh_table">
-          <input type="submit" value="Refresh">
-        </form>
+          <input type="submit" value="Refresh" onClick="refreshTable();">
+        </form> 
+        <!--<button onClick="refreshTable();" value="show">Refresh</button>-->
       </div>
       <div class="wide_cell"></div>
       <div class="cell">
-      	<form action="/CSE135/analytics" method="post">
+      	 <form action="/CSE135/analytics" method="post">
           <input type="hidden" name="action" value="refresh_table">
-          <input type="submit" value="Refresh">
+          <input type="submit" value="Refresh" onClick="refreshTable();">
         </form>
+        <!--<button onClick="refreshTable();" value="show">Refresh</button> -->
       </div>
 
 	  <!-- End of div: grid -->

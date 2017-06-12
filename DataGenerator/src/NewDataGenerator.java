@@ -20,7 +20,7 @@ public class NewDataGenerator {
                 "NM","NV","NY","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VA","VI","VT",
                 "WA","WI","WV","WY"};
   
-  private static String DROP_VIEW = "drop view if exists precomputed;";
+  private static String DROP_VIEW = "drop table if exists precomputed;";
   private static String DROP_TABLES = "DROP TABLE items, carts, product, categories, users ";
   
   private static String CREATE_USER = "CREATE TABLE USERS ( ID SERIAL PRIMARY KEY, NAME TEXT UNIQUE NOT NULL, "
